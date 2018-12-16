@@ -58,7 +58,7 @@ export default {
   data() {
     return {
       flag: false,
-      apiHost: "http://localhost:5000",
+      apiHost: "https://responsa-na.herokuapp.com/",
       recognition: new webkitSpeechRecognition(),
       voiceMessage: "",
       category: null,
