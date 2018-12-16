@@ -52,6 +52,7 @@ import animetion from "./Animetion";
 import axios from "axios";
 export default {
   name: "Main",
+
   components: {
     "animetion-component": animetion
   },
