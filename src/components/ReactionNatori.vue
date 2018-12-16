@@ -28,12 +28,17 @@
         >追加する</button>
 
         <div v-for="Vtext in voiceLinkTexts" v-bind:key="Vtext.unique">
-          <input type="text" v-model="Vtext.iVoice">
-          <select v-model="Vtext.selectCategory" @change="getMp3(Vtext)">
+          <input type="text" v-model="Vtext.iVoice" style="width: 150px">
+          <select v-model="Vtext.selectCategory" @change="getMp3(Vtext)" style="width: 250px">
             <option disabled value>Please select one</option>
             <option v-for="item in category" v-bind:key="item + Vtext.unique">{{item}}</option>
           </select>
-          <select v-if="Vtext.mp3list" v-model="Vtext.selectVoice" @change="audioPlaySet(Vtext)">
+          <select
+            v-if="Vtext.mp3list"
+            v-model="Vtext.selectVoice"
+            @change="audioPlaySet(Vtext)"
+            style="width: 200px"
+          >
             <option disabled value>Please select one</option>
             <option
               v-for="mp3 in Vtext.mp3list"
