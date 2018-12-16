@@ -80,17 +80,17 @@ export default {
   },
   methods: {
     toggle() {
-      console.log("toggle");
+      ////console.log("toggle");
       this.flag = !this.flag;
       if (this.flag) this.recognition.start();
       else this.recognition.stop();
     },
     listPush() {
-      console.log("listPush");
+      ////console.log("listPush");
       this.voiceLinkTexts.push(this.independentObejct());
     },
     independentObejct() {
-      console.log("independentObject");
+      ////console.log("independentObject");
       return {
         // unique: this.voiceLinkTexts[this.voiceLinkTexts.length - 1].unique + 1,
         unique: this.voiceLinkTexts.length,
@@ -103,7 +103,7 @@ export default {
       };
     },
     getCategory() {
-      console.log("getCategory");
+      //console.log("getCategory");
       axios
         .get(this.apiHost + "/api/sana/category")
         .then(res => {
@@ -114,7 +114,7 @@ export default {
         });
     },
     getMp3(Vtext) {
-      console.log("getMp3");
+      //console.log("getMp3");
       axios
         .get(this.apiHost + "/api/sana/contents", {
           params: {
@@ -122,16 +122,16 @@ export default {
           }
         })
         .then(res => {
-          // console.log(res.data.voicelist);
+          // //console.log(res.data.voicelist);
           this.voiceLinkTexts[Vtext.unique].mp3list = res.data.voicelist;
         })
         .catch(res => {
           console.log(res);
         });
-      // console.log(this.voiceLinkTexts[Vtext.unique]);
+      //console.log(this.voiceLinkTexts[Vtext.unique]);
     },
     audioPlaySet(Vtext) {
-      console.log("audioPlaySet");
+      //console.log("audioPlaySet");
       Vtext.mp3list.forEach(element => {
         if (element.name == Vtext.selectVoice) {
           this.voiceLinkTexts[Vtext.unique].oVoice = element.url;
@@ -141,22 +141,22 @@ export default {
       });
     },
     del(Vtext) {
-      console.log("del");
+      //console.log("del");
       this.voiceLinkTexts.splice(Vtext.unique, 1);
       for (var i = 0; i < this.voiceLinkTexts.length; i++)
         this.voiceLinkTexts[i].unique = i;
     },
     audioEvent(text) {
-      console.log("audioEvent");
+      //console.log("audioEvent");
       this.voiceLinkTexts.forEach(element => {
         if (~text.indexOf(element.iVoice)) {
-          console.log(element.oVoice);
+          //console.log(element.oVoice);
           // this.playList.push(element.audio)
           if (this.nowPlay != null)
             this.voiceLinkTexts[this.nowPlay].audio.pause();
           this.nowPlay = element.unique;
           element.audio.play();
-          console.log("Audio end");
+          //console.log("Audio end");
           return;
         }
       });
@@ -165,21 +165,22 @@ export default {
   // watch: {
   //   voiceLinkTexts() {
   //     for (var i = 0; i < this.voiceLinkTexts.length - 1; i++)
-  //       console.log(this.voiceLinkTexts[i]);
+  // console.log(this.voiceLinkTexts[i]);
   //   }
   // },
   computed: {
     canPush() {
-      console.log("canPush");
+      //console.log("canPush");
       return this.voiceLinkTexts.length < 10;
     },
     canShowSelector(Vtext) {
-      console.log("canShowSelector" + Vtext.unique);
+      //console.log("canShowSelector" + Vtext.unique);
+
       return this.voiceLinkTexts[Vtext.unique].mp3list == null;
     }
   },
   created: function() {
-    console.log("created");
+    //console.log("created");
     this.getCategory();
     //webkitの使用機能やイベントを設定
 
@@ -205,7 +206,7 @@ export default {
         //今後はここに機能を追加していく
         if (results[i].isFinal) {
           var text = results[i][0].transcript;
-          console.log(text);
+          //console.log(text);
           this.audioEvent(text);
         }
       }
