@@ -84,17 +84,17 @@ export default {
   },
   methods: {
     toggle() {
-      console.log("toggle");
+      //console.log("toggle");
       this.recogFlag = !this.recogFlag;
       if (this.recogFlag) this.recognition.start();
       else this.recognition.stop();
     },
     listPush() {
-      console.log("listPush");
+      //console.log("listPush");
       this.voiceLinkTexts.push(this.independentObejct());
     },
     independentObejct() {
-      console.log("independentObject");
+      //console.log("independentObject");
       return {
         unique: this.voiceLinkTexts.length,
         select: {
@@ -107,7 +107,7 @@ export default {
       };
     },
     axiosGetCategory() {
-      console.log("getCategory");
+      //console.log("getCategory");
       axios
         .get(this.apiHost + "/api/sana/category")
         .then(res => {
@@ -119,7 +119,7 @@ export default {
         .then(console.log("getCategory finsish"));
     },
     axiosGetNameList(vlt) {
-      console.log("getNameList");
+      //console.log("getNameList");
       axios
         .get(this.apiHost + "/api/sana/names", {
           params: {
@@ -135,7 +135,7 @@ export default {
         .then(console.log("getNameList finish"));
     },
     axiosGetURL(vlt) {
-      console.log("getURL");
+      //console.log("getURL");
       return axios
         .get(this.apiHost + "/api/sana/voiceurl", {
           params: {
@@ -152,7 +152,7 @@ export default {
         .then(console.log("getURL finish"));
     },
     del(vlt) {
-      console.log("del");
+      //console.log("del");
       this.voiceLinkTexts.splice(vlt.unique, 1);
       //ラベルの振り直し
       for (var i = 0; i < this.voiceLinkTexts.length; i++)
@@ -162,7 +162,7 @@ export default {
       for (var i = 0; i < this.voiceLinkTexts.length; i++) {
         var item = this.voiceLinkTexts[i];
         if (~text.indexOf(item.input)) {
-          console.log(item.audio);
+          //console.log(item.audio);
           this.playQue.push(item.audio);
         }
       }
@@ -170,11 +170,11 @@ export default {
   },
   computed: {
     canPush() {
-      console.log("canPush");
+      //console.log("canPush");
       return this.voiceLinkTexts.length < 10;
     },
     canDelete() {
-      console.log("canDelete");
+      //console.log("canDelete");
       return this.voiceLinkTexts.length - 1;
     }
   },
@@ -190,17 +190,17 @@ export default {
     //   }
     // },
     playQue() {
-      console.log("playAudio" + this.playQue.length);
+      //console.log("playAudio" + this.playQue.length);
       if (this.playQue.length > 0 && this.audioFlag) {
         this.audioObj.src = this.playQue[0];
-        console.log("nowPlay: " + this.playQue[0]);
+        //console.log("nowPlay: " + this.playQue[0]);
         this.audioFlag = false;
         this.audioObj.play();
       }
     }
   },
   created() {
-    console.log("created");
+    //console.log("created");
     this.axiosGetCategory();
     //webkitの使用機能やイベントを設定
     //日本語を読み取る
@@ -216,7 +216,7 @@ export default {
     //読み取り結果のイベント
     this.recognition.onresult = event => {
       var results = event.results;
-      console.log(results);
+      //console.log(results);
       this.audioSetQue(results[event.resultIndex][0].transcript);
       this.showInputText = results[event.resultIndex][0].transcript;
       //読み取った文章をリアルタイムにユーザーに表示
