@@ -1,51 +1,48 @@
 <template>
   <div>
     <div class="title-bar">
-      <h1 class="siimple-h1 siimple--color-red">ResponSa-na</h1>
+      <h1 class="title">ResponSa-na</h1>
     </div>
 
     <div class="button">
-      <label class="button-label siimple--color-blue">音声認識ボタンをおしていけ〜？？</label>
-      <br>
-      <button class="siimple-btn siimple-btn--blue" @click="toggle" v-show="!flag">録音開始</button>
-      <button class="siimple-btn siimple-btn--red" @click="toggle" v-show="flag">録音停止</button>
+      <label>音声認識ボタンをおしていけ〜？？</label>
+      <button class="start" @click="toggle" v-show="!recogFlag">録音開始</button>
+      <button class="end" @click="toggle" v-show="recogFlag">録音停止</button>
     </div>
 
     <div class="separate">
       <div class="left-box">
         <p>喋った言葉をここに表示するよ</p>
-        <p>{{voiceMessage}}</p>
+        <p>{{showInputText}}</p>
+        <!-- <textarea v-model="showInputText"></textarea> -->
         <br>
         <br>
         <animetion-component></animetion-component>
       </div>
 
       <div class="right-box">
-        <button
-          class="siimple-btn siimple-btn--orange"
-          @click="listPush"
-          v-bind:disabled="!canPush"
-        >追加する</button>
+        <button class="add-form" @click="listPush" v-bind:disabled="!canPush">追加する</button>
 
-        <div v-for="Vtext in voiceLinkTexts" v-bind:key="Vtext.unique">
-          <input type="text" v-model="Vtext.iVoice" style="width: 150px">
-          <select v-model="Vtext.selectCategory" @change="getMp3(Vtext)" style="width: 250px">
-            <option disabled value>Please select one</option>
-            <option v-for="item in category" v-bind:key="item + Vtext.unique">{{item}}</option>
-          </select>
+        <div v-for="vlt in voiceLinkTexts" v-bind:key="vlt.unique">
+          <input type="text" v-model="vlt.input" style="width: 200px">
           <select
-            v-if="Vtext.mp3list"
-            v-model="Vtext.selectVoice"
-            @change="audioPlaySet(Vtext)"
-            style="width: 200px"
+            v-model="vlt.select.category"
+            @change="axiosGetNameList(vlt)"
+            style="width: 300px"
           >
             <option disabled value>Please select one</option>
-            <option
-              v-for="mp3 in Vtext.mp3list"
-              v-bind:key="mp3.url + mp3.name + Vtext.unique"
-            >{{mp3.name}}</option>
+            <option v-for="title in broadcastCategory" v-bind:key="title + vlt.unique">{{title}}</option>
           </select>
-          <button @click="del(Vtext)" v-bind:disabled="!(voiceLinkTexts.length-1)">削除</button>
+          <select
+            v-if="vlt.nameList"
+            v-model="vlt.select.name"
+            @change="axiosGetURL(vlt)"
+            style="width: 100px"
+          >
+            <option disabled value>Please select one</option>
+            <option v-for="name in vlt.nameList" v-bind:key="name + Math.random()">{{name}}</option>
+          </select>
+          <button @click="del(vlt)" v-bind:disabled="!canDelete">削除</button>
         </div>
       </div>
     </div>
@@ -63,159 +60,175 @@ export default {
   },
   data() {
     return {
-      flag: false,
       apiHost: "https://responsa-na.herokuapp.com/",
       recognition: new webkitSpeechRecognition(),
-      voiceMessage: "",
-      category: null,
-      nowPlay: null,
-      playList: [],
+      showInputText: "",
+      broadcastCategory: null,
+      audioObj: new Audio(),
+      audioFlag: true,
+      recogFlag: false,
+      playQue: [],
       voiceLinkTexts: [
         {
           unique: 0,
-          selectCategory: null,
-          selectVoice: null,
-          mp3list: null,
-          iVoice: null,
-          oVoice: null,
-          audio: new Audio()
+          select: {
+            category: null,
+            name: null
+          },
+          nameList: null,
+          input: null,
+          audio: null
         }
       ]
     };
   },
   methods: {
     toggle() {
-      ////console.log("toggle");
-      this.flag = !this.flag;
-      if (this.flag) this.recognition.start();
+      console.log("toggle");
+      this.recogFlag = !this.recogFlag;
+      if (this.recogFlag) this.recognition.start();
       else this.recognition.stop();
     },
     listPush() {
-      ////console.log("listPush");
+      console.log("listPush");
       this.voiceLinkTexts.push(this.independentObejct());
     },
     independentObejct() {
-      ////console.log("independentObject");
+      console.log("independentObject");
       return {
-        // unique: this.voiceLinkTexts[this.voiceLinkTexts.length - 1].unique + 1,
         unique: this.voiceLinkTexts.length,
-        selectCategory: null,
-        selectVoice: null,
-        mp3list: null,
-        iVoice: null,
-        oVoice: null,
-        audio: new Audio()
+        select: {
+          category: null,
+          name: null
+        },
+        nameList: null,
+        input: null,
+        audio: null
       };
     },
-    getCategory() {
-      //console.log("getCategory");
+    axiosGetCategory() {
+      console.log("getCategory");
       axios
         .get(this.apiHost + "/api/sana/category")
         .then(res => {
-          this.category = res.data.categorylist;
+          this.broadcastCategory = res.data.categorylist;
         })
         .catch(res => {
           console.log(res);
-        });
+        })
+        .then(console.log("getCategory finsish"));
     },
-    getMp3(Vtext) {
-      //console.log("getMp3");
+    axiosGetNameList(vlt) {
+      console.log("getNameList");
       axios
-        .get(this.apiHost + "/api/sana/contents", {
+        .get(this.apiHost + "/api/sana/names", {
           params: {
-            category: Vtext.selectCategory
+            category: vlt.select.category
           }
         })
         .then(res => {
-          // //console.log(res.data.voicelist);
-          this.voiceLinkTexts[Vtext.unique].mp3list = res.data.voicelist;
+          this.voiceLinkTexts[vlt.unique].nameList = res.data.voicelist;
         })
         .catch(res => {
           console.log(res);
-        });
-      //console.log(this.voiceLinkTexts[Vtext.unique]);
+        })
+        .then(console.log("getNameList finish"));
     },
-    audioPlaySet(Vtext) {
-      //console.log("audioPlaySet");
-      Vtext.mp3list.forEach(element => {
-        if (element.name == Vtext.selectVoice) {
-          this.voiceLinkTexts[Vtext.unique].oVoice = element.url;
-          this.voiceLinkTexts[Vtext.unique].audio.src = element.url;
-          return;
-        }
-      });
+    axiosGetURL(vlt) {
+      console.log("getURL");
+      return axios
+        .get(this.apiHost + "/api/sana/voiceurl", {
+          params: {
+            category: vlt.select.category,
+            name: vlt.select.name
+          }
+        })
+        .then(res => {
+          this.voiceLinkTexts[vlt.unique].audio = res.data.voiceurl;
+        })
+        .catch(res => {
+          console.log(res);
+        })
+        .then(console.log("getURL finish"));
     },
-    del(Vtext) {
-      //console.log("del");
-      this.voiceLinkTexts.splice(Vtext.unique, 1);
+    del(vlt) {
+      console.log("del");
+      this.voiceLinkTexts.splice(vlt.unique, 1);
+      //ラベルの振り直し
       for (var i = 0; i < this.voiceLinkTexts.length; i++)
         this.voiceLinkTexts[i].unique = i;
     },
-    audioEvent(text) {
-      //console.log("audioEvent");
-      this.voiceLinkTexts.forEach(element => {
-        if (~text.indexOf(element.iVoice)) {
-          //console.log(element.oVoice);
-          // this.playList.push(element.audio)
-          if (this.nowPlay != null)
-            this.voiceLinkTexts[this.nowPlay].audio.pause();
-          this.nowPlay = element.unique;
-          element.audio.play();
-          //console.log("Audio end");
-          return;
+    audioSetQue(text) {
+      for (var i = 0; i < this.voiceLinkTexts.length; i++) {
+        var item = this.voiceLinkTexts[i];
+        if (~text.indexOf(item.input)) {
+          console.log(item.audio);
+          this.playQue.push(item.audio);
         }
-      });
+      }
     }
   },
-  // watch: {
-  //   voiceLinkTexts() {
-  //     for (var i = 0; i < this.voiceLinkTexts.length - 1; i++)
-  // console.log(this.voiceLinkTexts[i]);
-  //   }
-  // },
   computed: {
     canPush() {
-      //console.log("canPush");
+      console.log("canPush");
       return this.voiceLinkTexts.length < 10;
     },
-    canShowSelector(Vtext) {
-      //console.log("canShowSelector" + Vtext.unique);
-
-      return this.voiceLinkTexts[Vtext.unique].mp3list == null;
+    canDelete() {
+      console.log("canDelete");
+      return this.voiceLinkTexts.length - 1;
     }
   },
-  created: function() {
-    //console.log("created");
-    this.getCategory();
+  watch: {
+    // showInputText() {
+    //   console.log("test");
+    //   for (var i = 0; i < this.voiceLinkTexts.length; i++) {
+    //     var item = this.voiceLinkTexts[i];
+    //     if (~this.showInputText.indexOf(item.input)) {
+    //       console.log(item.audio);
+    //       this.playQue.push(item.audio);
+    //     }
+    //   }
+    // },
+    playQue() {
+      console.log("playAudio" + this.playQue.length);
+      if (this.playQue.length > 0 && this.audioFlag) {
+        this.audioObj.src = this.playQue[0];
+        console.log("nowPlay: " + this.playQue[0]);
+        this.audioFlag = false;
+        this.audioObj.play();
+      }
+    }
+  },
+  created() {
+    console.log("created");
+    this.axiosGetCategory();
     //webkitの使用機能やイベントを設定
-
     //日本語を読み取る
     this.recognition.lang = "ja";
     //忘れた
     this.recognition.interimResults = true;
     //連続で文章を読み取る
     this.recognition.continuous = true;
-
     //入力を開始した時のイベント
-    this.recognition.onstart = () => {};
+    // this.recognition.onstart = () => {};
     //文章が終わった時のイベント
-    this.recognition.onend = () => {};
+    // this.recognition.onend = () => {};
     //読み取り結果のイベント
     this.recognition.onresult = event => {
       var results = event.results;
-
+      console.log(results);
+      this.audioSetQue(results[event.resultIndex][0].transcript);
+      this.showInputText = results[event.resultIndex][0].transcript;
       //読み取った文章をリアルタイムにユーザーに表示
-      for (var i = event.resultIndex; i < results.length; i++) {
-        this.voiceMessage = results[i][0].transcript;
-        //最終結果をログ出力
-        //今後はここに機能を追加していく
-        if (results[i].isFinal) {
-          var text = results[i][0].transcript;
-          //console.log(text);
-          this.audioEvent(text);
-        }
-      }
+      // for (var i = event.resultIndex; i < results.length; i++) {
+
+      // }
     };
+
+    this.audioObj.addEventListener("ended", () => {
+      this.playQue.shift();
+      this.audioFlag = true;
+    });
   }
 };
 </script>
@@ -229,14 +242,15 @@ export default {
 }
 
 .button {
-  padding: 1%;
+  padding: 5px;
   text-align: center;
   color: black;
   font-family: "M PLUS 1p";
 }
 
-.button-label {
+.button label {
   font-size: 150%;
+  padding: 5px;
 }
 
 .separate {
@@ -246,7 +260,7 @@ export default {
 }
 
 .left-box {
-  padding: 1%;
+  padding: 5px;
   float: left;
   width: 20%;
   font-family: "M PLUS 1p";
@@ -254,7 +268,7 @@ export default {
 }
 
 .right-box {
-  padding: 1%;
+  padding: 5px;
   float: left;
   width: 60%;
   font-family: "M PLUS 1p";
