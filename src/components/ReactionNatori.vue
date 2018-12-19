@@ -195,7 +195,7 @@ export default {
     //忘れた
     this.recognition.interimResults = true;
 
-    this.recognition.maxAlternatives = 5;
+    this.recognition.maxAlternatives = 1;
     //連続で文章を読み取る
     this.recognition.continuous = true;
     //入力を開始した時のイベント
@@ -208,9 +208,7 @@ export default {
     this.recognition.onresult = event => {
       var results = event.results[event.resultIndex];
       this.showInputText = results[0].transcript;
-      if (results.isFinal) {
-        this.audioSetQue(results[0].transcript);
-      }
+      if (results.isFinal) this.audioSetQue(results[0].transcript);
     };
 
     this.audioObj.addEventListener("ended", () => {
