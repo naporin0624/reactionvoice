@@ -14,9 +14,6 @@
       <div class="left-box">
         <p>喋った言葉をここに表示するよ</p>
         <p>{{showInputText}}</p>
-        <!-- <textarea v-model="showInputText"></textarea> -->
-        <br>
-        <br>
         <animetion-component></animetion-component>
       </div>
 
@@ -42,7 +39,7 @@
             <option disabled value>Please select one</option>
             <option v-for="name in vlt.nameList" v-bind:key="name + Math.random()">{{name}}</option>
           </select>
-          <button @click="del(vlt)" v-bind:disabled="!canDelete">削除</button>
+          <button @click="delInputBox(vlt)" v-bind:disabled="!canDelete">削除</button>
         </div>
       </div>
     </div>
@@ -151,7 +148,7 @@ export default {
         })
         .then(console.log("getURL finish"));
     },
-    del(vlt) {
+    delInputBox(vlt) {
       //console.log("del");
       this.voiceLinkTexts.splice(vlt.unique, 1);
       //ラベルの振り直し
@@ -179,16 +176,6 @@ export default {
     }
   },
   watch: {
-    // showInputText() {
-    //   console.log("test");
-    //   for (var i = 0; i < this.voiceLinkTexts.length; i++) {
-    //     var item = this.voiceLinkTexts[i];
-    //     if (~this.showInputText.indexOf(item.input)) {
-    //       console.log(item.audio);
-    //       this.playQue.push(item.audio);
-    //     }
-    //   }
-    // },
     playQue() {
       //console.log("playAudio" + this.playQue.length);
       if (this.playQue.length > 0 && this.audioFlag) {
@@ -207,22 +194,23 @@ export default {
     this.recognition.lang = "ja";
     //忘れた
     this.recognition.interimResults = true;
+
+    this.recognition.maxAlternatives = 5;
     //連続で文章を読み取る
     this.recognition.continuous = true;
     //入力を開始した時のイベント
     // this.recognition.onstart = () => {};
     //文章が終わった時のイベント
-    // this.recognition.onend = () => {};
+    this.recognition.onend = () => {
+      if (this.recogFlag) this.recognition.start();
+    };
     //読み取り結果のイベント
     this.recognition.onresult = event => {
-      var results = event.results;
-      //console.log(results);
-      this.audioSetQue(results[event.resultIndex][0].transcript);
-      this.showInputText = results[event.resultIndex][0].transcript;
-      //読み取った文章をリアルタイムにユーザーに表示
-      // for (var i = event.resultIndex; i < results.length; i++) {
-
-      // }
+      var results = event.results[event.resultIndex];
+      this.showInputText = results[0].transcript;
+      if (results.isFinal) {
+        this.audioSetQue(results[0].transcript);
+      }
     };
 
     this.audioObj.addEventListener("ended", () => {
@@ -262,7 +250,7 @@ export default {
 .left-box {
   padding: 5px;
   float: left;
-  width: 20%;
+  width: 40%;
   font-family: "M PLUS 1p";
   font-size: 20px;
 }
@@ -270,7 +258,7 @@ export default {
 .right-box {
   padding: 5px;
   float: left;
-  width: 60%;
+  width: 50%;
   font-family: "M PLUS 1p";
   font-size: 20px;
 }
