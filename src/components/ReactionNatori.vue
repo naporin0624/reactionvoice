@@ -1,45 +1,49 @@
 <template>
   <div>
-    <div class="title-bar">
-      <h1 class="title">ResponSa-na</h1>
-    </div>
+    <h1 class="title">ResponSa-na</h1>
 
-    <div class="button">
-      <label>音声認識ボタンをおしていけ〜？？</label>
-      <button class="start" @click="toggle" v-show="!recogFlag">録音開始</button>
-      <button class="end" @click="toggle" v-show="recogFlag">録音停止</button>
+    <div class="start-button-contents">
+      <label>音声認識ボタンをおしてね！</label>
+      <button class="start" @click="toggle" v-show="!recogFlag">音声取得開始</button>
+      <button class="end" @click="toggle" v-show="recogFlag">音声取得停止</button>
     </div>
 
     <div class="separate">
       <div class="left-box">
+        <a
+          href="https://twitter.com/share?ref_src=twsrc%5Etfw"
+          class="twitter-share-button"
+          data-show-count="true"
+        >Tweet</a>
         <p>喋った言葉をここに表示するよ</p>
-        <p>{{showInputText}}</p>
-        <animetion-component></animetion-component>
+        <div class="input-text">
+          <p>{{showInputText}}</p>
+        </div>
+        <discription-component></discription-component>
       </div>
 
       <div class="right-box">
         <button class="add-form" @click="listPush" v-bind:disabled="!canPush">追加する</button>
-
-        <div v-for="vlt in voiceLinkTexts" v-bind:key="vlt.unique">
-          <input type="text" v-model="vlt.input" style="width: 200px">
+        <div>
+          <span class="input-box-label">反応させたい言葉</span>
+          <span class="select-category-label">放送カテゴリ</span>
+          <span class="select-contents-label">反応ボイス</span>
+        </div>
+        <div class="form" v-for="vlt in voiceLinkTexts" v-bind:key="vlt.unique">
+          <input type="text" v-model="vlt.input" style="width: 150px">
           <select
             v-model="vlt.select.category"
             @change="axiosGetNameList(vlt)"
-            style="width: 300px"
+            style="width: 200px"
           >
             <option disabled value>Please select one</option>
-            <option v-for="title in broadcastCategory" v-bind:key="title + vlt.unique">{{title}}</option>
+            <option v-for="title in broadcastCategory" v-bind:key="title + Math.random()">{{title}}</option>
           </select>
-          <select
-            v-if="vlt.nameList"
-            v-model="vlt.select.name"
-            @change="axiosGetURL(vlt)"
-            style="width: 100px"
-          >
+          <select v-model="vlt.select.name" @change="axiosGetURL(vlt)" style="width: 100px">
             <option disabled value>Please select one</option>
             <option v-for="name in vlt.nameList" v-bind:key="name + Math.random()">{{name}}</option>
           </select>
-          <button @click="delInputBox(vlt)" v-bind:disabled="!canDelete">削除</button>
+          <button @click="delInputBox(vlt)" v-bind:disabled="!canDelete">削除する</button>
         </div>
       </div>
     </div>
@@ -47,13 +51,13 @@
 </template>
 
 <script>
-import animetion from "./Animetion";
+import discription from "./discription";
 import axios from "axios";
 export default {
   name: "Main",
 
   components: {
-    "animetion-component": animetion
+    "discription-component": discription
   },
   data() {
     return {
@@ -220,23 +224,90 @@ export default {
 </script>
 
 <style>
-.title-bar {
+body {
+  color: #7c7c7c; /*文字色*/
+}
+/* .twitter-share-button {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+} */
+.title {
   text-align: center;
   font-family: "M PLUS 1p";
-  color: hotpink;
-  font-size: 150%;
+  color: #f4cfe2;
 }
 
-.button {
+.start-button-contents {
   padding: 5px;
   text-align: center;
-  color: black;
-  font-family: "M PLUS 1p";
+  font-family: "B612 Mono", monospace;
+  font-size: 150%;
 }
-
 .button label {
-  font-size: 150%;
   padding: 5px;
+}
+
+button {
+  margin: 5px;
+  font-size: 50%;
+  color: #7c7c7c; /*文字色*/
+  border-radius: 0.5em;
+}
+
+.input-text {
+  padding: 0.5em 1em;
+  width: 88%;
+  height: 8em;
+  /* margin: 2em 0; */
+  font-weight: bold;
+  color: #7c7c7c; /*文字色*/
+  background: #fff;
+  border: solid 3px #f8bad7; /*線*/
+  border-radius: 10px; /*角の丸み*/
+}
+.input-text p {
+  margin: 0;
+  padding: 0;
+  font-family: "B612 Mono", monospace;
+}
+
+.start {
+  background-color: #f8bad7;
+}
+
+.end {
+  background-color: #f8bad7;
+}
+
+.end {
+  -webkit-animation: blink 1s ease-in-out infinite alternate;
+  -moz-animation: blink 1s ease-in-out infinite alternate;
+  animation: blink 1s ease-in-out infinite alternate;
+}
+@-webkit-keyframes blink {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@-moz-keyframes blink {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes blink {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 .separate {
@@ -248,16 +319,47 @@ export default {
 .left-box {
   padding: 5px;
   float: left;
-  width: 40%;
+  width: 30%;
   font-family: "M PLUS 1p";
   font-size: 20px;
 }
 
 .right-box {
   padding: 5px;
-  float: left;
-  width: 50%;
+  float: right;
+  width: 65%;
   font-family: "M PLUS 1p";
   font-size: 20px;
+}
+
+.form {
+  margin: 5px;
+}
+
+.input-box-label {
+  display: inline-block; /* インラインブロック要素にする */
+  /* background-color: #ccc; 背景色指定 */
+  padding: 1px;
+  width: 150px;
+  font-size: 90%;
+  text-align: center;
+}
+
+.select-category-label {
+  display: inline-block; /* インラインブロック要素にする */
+  /* background-color: #ccc; 背景色指定 */
+  padding: 1px;
+  width: 200px;
+  font-size: 90%;
+  text-align: center;
+}
+
+.select-contents-label {
+  display: inline-block; /* インラインブロック要素にする */
+  /* background-color: #ccc; 背景色指定 */
+  padding: 1px;
+  width: 100px;
+  font-size: 90%;
+  text-align: center;
 }
 </style>

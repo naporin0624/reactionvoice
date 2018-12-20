@@ -1,6 +1,5 @@
 <template>
   <div>
-    <p>なにか可愛らしいアニメーションでもつけようかなと思ったけど難しかったです</p>
     <ul>
       <li>chromeのみ動作します</li>
       <li>最大10個まで反応する言葉を作ることができます</li>
@@ -14,7 +13,7 @@
 
 <script>
 export default {
-  name: "Animeiton"
+  name: "discription"
 };
 </script>
 
