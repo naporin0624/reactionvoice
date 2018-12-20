@@ -26,7 +26,7 @@
         <button class="add-form" @click="listPush" v-bind:disabled="!canPush">追加する</button>
         <div>
           <span class="input-box-label">反応させたい言葉</span>
-          <span class="select-category-label">放送カテゴリ</span>
+          <span class="select-category-label">放送タイトル</span>
           <span class="select-contents-label">反応ボイス</span>
         </div>
         <div class="form" v-for="vlt in voiceLinkTexts" v-bind:key="vlt.unique">
