@@ -326,13 +326,14 @@ button {
 
 .center-box {
   float: left;
-  width: 40%;
+  width: 45%;
   font-family: "M PLUS 1p";
   font-size: 20px;
 }
 .right-box {
   float: left;
-  width: 30%;
+  width: 25%;
+  height: 1vh;
 }
 
 .form {
