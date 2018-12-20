@@ -22,7 +22,7 @@
         <discription-component></discription-component>
       </div>
 
-      <div class="right-box">
+      <div class="center-box">
         <button class="add-form" @click="listPush" v-bind:disabled="!canPush">追加する</button>
         <div>
           <span class="input-box-label">反応させたい言葉</span>
@@ -46,18 +46,24 @@
           <button @click="delInputBox(vlt)" v-bind:disabled="!canDelete">削除する</button>
         </div>
       </div>
+
+      <div class="right-box">
+        <natori-component></natori-component>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import discription from "./discription";
+import natoriwidgets from "./natoriWidgets";
 import axios from "axios";
 export default {
   name: "Main",
 
   components: {
-    "discription-component": discription
+    "discription-component": discription,
+    "natori-component": natoriwidgets
   },
   data() {
     return {
@@ -172,7 +178,7 @@ export default {
   computed: {
     canPush() {
       //console.log("canPush");
-      return this.voiceLinkTexts.length < 10;
+      return this.voiceLinkTexts.length < 20;
     },
     canDelete() {
       //console.log("canDelete");
@@ -227,11 +233,6 @@ export default {
 body {
   color: #7c7c7c; /*文字色*/
 }
-/* .twitter-share-button {
-  position: fixed;
-  top: 10px;
-  left: 10px;
-} */
 .title {
   text-align: center;
   font-family: "M PLUS 1p";
@@ -257,7 +258,7 @@ button {
 
 .input-text {
   padding: 0.5em 1em;
-  width: 88%;
+  width: 85%;
   height: 8em;
   /* margin: 2em 0; */
   font-weight: bold;
@@ -317,23 +318,25 @@ button {
 }
 
 .left-box {
-  padding: 5px;
   float: left;
   width: 30%;
   font-family: "M PLUS 1p";
   font-size: 20px;
 }
 
-.right-box {
-  padding: 5px;
-  float: right;
-  width: 65%;
+.center-box {
+  float: left;
+  width: 40%;
   font-family: "M PLUS 1p";
   font-size: 20px;
 }
+.right-box {
+  float: left;
+  width: 30%;
+}
 
 .form {
-  margin: 5px;
+  margin: 2px;
 }
 
 .input-box-label {
