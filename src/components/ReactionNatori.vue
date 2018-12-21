@@ -2,6 +2,13 @@
   <div>
     <h1 class="title">ResponSa-na</h1>
 
+    <div class>
+      <u>
+        <b>さなちゃんからいつも元気貰ってます、ありがとう！
+          <br>勝手に作っちゃってごめんなさい
+        </b>
+      </u>
+    </div>
     <div class="start-button-contents">
       <label>音声認識ボタンをおしてね！</label>
       <button class="start" @click="toggle" v-show="!recogFlag">音声取得開始</button>
@@ -325,6 +332,13 @@ button {
   font-size: 20px;
   text-align: center;
 }
+
+.right-box {
+  float: left;
+  width: 25%;
+  font-size: 20px;
+}
+
 .add {
   text-align: left;
 }
@@ -359,10 +373,5 @@ button {
   width: 100%;
   font-size: 90%;
   text-align: center;
-}
-.right-box {
-  float: left;
-  width: 25%;
-  font-size: 20px;
 }
 </style>

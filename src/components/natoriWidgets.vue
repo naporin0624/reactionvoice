@@ -22,7 +22,7 @@
       class="twitter-timeline"
       href="https://twitter.com/sana_natori?ref_src=twsrc%5Etfw"
       data-width="100%"
-      data-height="600"
+      data-height="550"
     >Tweets by sana_natori</a>
   </div>
 </template>
