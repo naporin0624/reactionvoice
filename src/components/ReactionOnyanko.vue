@@ -67,7 +67,8 @@ export default {
   },
   data() {
     return {
-      apiHost: "https://responsa-na.herokuapp.com/",
+      // apiHost: "https://responsa-na.herokuapp.com/",
+      apiHost: "http://localhost:5000/",
       recognition: new webkitSpeechRecognition(),
       showInputText: "",
       broadcastCategory: null,
@@ -116,7 +117,7 @@ export default {
     axiosGetCategory() {
       //console.log("getCategory");
       axios
-        .get(this.apiHost + "/api/sana/category")
+        .get(this.apiHost + "/api/onyanko/category")
         .then(res => {
           this.broadcastCategory = res.data.categorylist;
         })
@@ -128,7 +129,7 @@ export default {
     axiosGetNameList(vlt) {
       //console.log("getNameList");
       axios
-        .get(this.apiHost + "/api/sana/names", {
+        .get(this.apiHost + "/api/onyanko/names", {
           params: {
             category: vlt.select.category
           }
@@ -144,7 +145,7 @@ export default {
     axiosGetURL(vlt) {
       //console.log("getURL");
       return axios
-        .get(this.apiHost + "/api/sana/voiceurl", {
+        .get(this.apiHost + "/api/onyanko/voiceurl", {
           params: {
             category: vlt.select.category,
             name: vlt.select.name
@@ -232,12 +233,10 @@ export default {
 <style>
 body {
   color: #7c7c7c; /*文字色*/
-  font-family: "M PLUS 1p";
 }
 .title {
   text-align: center;
-  font-family: "Fredoka One", cursive;
-  font-size: 280%;
+  font-family: "M PLUS 1p";
   color: #f4cfe2;
 }
 
@@ -245,6 +244,10 @@ body {
   padding: 5px;
   text-align: center;
   font-family: "B612 Mono", monospace;
+  font-size: 150%;
+}
+.button label {
+  padding: 5px;
 }
 
 button {
@@ -252,6 +255,23 @@ button {
   font-size: 50%;
   color: #7c7c7c; /*文字色*/
   border-radius: 0.5em;
+}
+
+.input-text {
+  padding: 0.5em 1em;
+  width: 85%;
+  height: 8em;
+  /* margin: 2em 0; */
+  font-weight: bold;
+  color: #7c7c7c; /*文字色*/
+  background: #fff;
+  border: solid 3px #f8bad7; /*線*/
+  border-radius: 10px; /*角の丸み*/
+}
+.input-text p {
+  margin: 0;
+  padding: 0;
+  font-family: "B612 Mono", monospace;
 }
 
 .start {
@@ -301,32 +321,20 @@ button {
 .left-box {
   float: left;
   width: 30%;
+  font-family: "M PLUS 1p";
   font-size: 20px;
 }
-.input-text {
-  padding: 0.5em 1em;
-  width: 85%;
-  height: 8em;
-  font-weight: bold;
-  color: #7c7c7c; /*文字色*/
-  background: #fff;
-  border: solid 3px #f8bad7; /*線*/
-  border-radius: 10px; /*角の丸み*/
-}
-.input-text p {
-  margin: 0;
-  padding: 0;
-  font-family: "B612 Mono", monospace;
-}
+
 .center-box {
   float: left;
   width: 45%;
+  font-family: "M PLUS 1p";
   font-size: 20px;
 }
 .right-box {
   float: left;
   width: 25%;
-  font-size: 20px;
+  height: 1vh;
 }
 
 .form {

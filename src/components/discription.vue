@@ -28,4 +28,7 @@ export default {
 </script>
 
 <style>
+.disctiption {
+  font-size: 18px;
+}
 </style>
