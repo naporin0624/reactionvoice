@@ -10,39 +10,41 @@
 
     <div class="separate">
       <div class="left-box">
-        <a
-          href="https://twitter.com/share?ref_src=twsrc%5Etfw"
-          class="twitter-share-button"
-          data-show-count="true"
-        >Tweet</a>
-        <p>喋った言葉をここに表示するよ</p>
-        <div class="input-text">
-          <p>{{showInputText}}</p>
-        </div>
-        <discription-component></discription-component>
+        <left-component v-bind:showInputText="showInputText"></left-component>
       </div>
 
       <div class="center-box">
-        <button class="add-form" @click="listPush" v-bind:disabled="!canPush">追加する</button>
-        <div>
-          <span class="input-box-label">反応させたい言葉</span>
-          <span class="select-category-label">放送タイトル</span>
-          <span class="select-contents-label">反応ボイス</span>
+        <div class="add">
+          <button @click="listPush" v-bind:disabled="!canPush">追加する</button>
         </div>
-        <div class="form" v-for="vlt in voiceLinkTexts" v-bind:key="vlt.unique">
-          <input type="text" v-model="vlt.input" style="width: 150px">
+        <div class="grid-contener">
+          <div class="input-box-label">反応させたい言葉</div>
+          <div class="select-category-label">放送タイトル</div>
+          <div class="select-contents-label">反応ボイス</div>
+        </div>
+
+        <div class="form grid-contener" v-for="vlt in voiceLinkTexts" v-bind:key="vlt.unique">
+          <!-- 単語入力欄 -->
+          <input type="text" v-model="vlt.input" style="width: 150px;">
+          <!-- 放送タイトル選択欄 -->
           <select
             v-model="vlt.select.category"
             @change="axiosGetNameList(vlt)"
-            style="width: 200px"
+            style="width: 150px"
           >
-            <option disabled value>Please select one</option>
+            <option disabled value>何か一つ選んでね</option>
             <option v-for="title in broadcastCategory" v-bind:key="title + Math.random()">{{title}}</option>
           </select>
-          <select v-model="vlt.select.name" @change="axiosGetURL(vlt)" style="width: 100px">
-            <option disabled value>Please select one</option>
+
+          <!-- 発火ボイス登録 -->
+          <select v-model="vlt.select.name" @change="axiosGetURL(vlt)" style="width: 150px">
+            <option disabled value v-show="vlt.select.category==''">何か一つ選んでね</option>
+            <option disabled value v-show="vlt.select.category!=''">先に放送タイトルを選んでね</option>
+            <!-- keyがダブることがあるのでrandomを使っている -->
+            <!-- そのうち直さないとまずいことになりそうな予感がある -->
             <option v-for="name in vlt.nameList" v-bind:key="name + Math.random()">{{name}}</option>
           </select>
+
           <button @click="delInputBox(vlt)" v-bind:disabled="!canDelete">削除する</button>
         </div>
       </div>
@@ -55,35 +57,49 @@
 </template>
 
 <script>
-import discription from "./discription";
+import left from "./leftbox";
 import natoriwidgets from "./natoriWidgets";
 import axios from "axios";
 export default {
   name: "Main",
 
   components: {
-    "discription-component": discription,
+    "left-component": left,
     "natori-component": natoriwidgets
   },
   data() {
     return {
+      //バックエンド接続先
       apiHost: "https://responsa-na.herokuapp.com/",
+      //音声認識API
       recognition: new webkitSpeechRecognition(),
+      //ユーザーが認識結果を見るための変数
       showInputText: "",
+      //放送タイトルをセット
       broadcastCategory: null,
+      //audioAPIをセット
       audioObj: new Audio(),
+      //再生可能ならtrue, そうでないならfalse
       audioFlag: true,
+      //録音開始ならtrue, そうでないならfalse
       recogFlag: false,
+      //イベントに引っかかった音声をQueに積む
       playQue: [],
+      //各入力フォームが持つ変数
       voiceLinkTexts: [
         {
+          //ユニークコード
           unique: 0,
+          //表示する音声リスト
+          nameList: null,
+          //選択したカテゴリの記憶
           select: {
             category: null,
             name: null
           },
-          nameList: null,
+          //反応させたい単語
           input: null,
+          //再生するmp3のURL
           audio: null
         }
       ]
@@ -210,7 +226,9 @@ export default {
     this.recognition.continuous = true;
     //入力を開始した時のイベント
     // this.recognition.onstart = () => {};
-    //文章が終わった時のイベント
+
+    //認識API終了した時のイベント
+    //1分黙りが続くと止まってしまうのでそれを回避するためのやつ
     this.recognition.onend = () => {
       if (this.recogFlag) this.recognition.start();
     };
@@ -221,6 +239,7 @@ export default {
       if (results.isFinal) this.audioSetQue(results[0].transcript);
     };
 
+    //audioAPIの終了イベントを検知した時の動作
     this.audioObj.addEventListener("ended", () => {
       this.playQue.shift();
       this.audioFlag = true;
@@ -303,30 +322,20 @@ button {
   width: 30%;
   font-size: 20px;
 }
-.input-text {
-  padding: 0.5em 1em;
-  width: 85%;
-  height: 8em;
-  font-weight: bold;
-  color: #7c7c7c; /*文字色*/
-  background: #fff;
-  border: solid 3px #f8bad7; /*線*/
-  border-radius: 10px; /*角の丸み*/
-}
-.input-text p {
-  margin: 0;
-  padding: 0;
-  font-family: "B612 Mono", monospace;
-}
+
 .center-box {
   float: left;
   width: 45%;
   font-size: 20px;
+  text-align: center;
 }
-.right-box {
-  float: left;
-  width: 25%;
-  font-size: 20px;
+.add {
+  text-align: left;
+}
+
+.grid-contener {
+  display: grid; /* グリッドレイアウト */
+  grid-template-columns: 25% 25% 25% 20%;
 }
 
 .form {
@@ -334,29 +343,30 @@ button {
 }
 
 .input-box-label {
-  display: inline-block; /* インラインブロック要素にする */
-  /* background-color: #ccc; 背景色指定 */
-  padding: 1px;
+  display: inline-block;
   width: 150px;
   font-size: 90%;
   text-align: center;
 }
 
 .select-category-label {
-  display: inline-block; /* インラインブロック要素にする */
-  /* background-color: #ccc; 背景色指定 */
-  padding: 1px;
-  width: 200px;
+  display: inline-block;
+  /* background-color: #fff; */
+  width: 150px;
   font-size: 90%;
   text-align: center;
 }
 
 .select-contents-label {
-  display: inline-block; /* インラインブロック要素にする */
-  /* background-color: #ccc; 背景色指定 */
-  padding: 1px;
-  width: 100px;
+  display: inline-block;
+  /* background-color: #fff; */
+  width: 150px;
   font-size: 90%;
   text-align: center;
+}
+.right-box {
+  float: left;
+  width: 25%;
+  font-size: 20px;
 }
 </style>

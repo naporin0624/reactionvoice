@@ -6,7 +6,7 @@
         class="natori-sana-icon"
         src="https://yt3.ggpht.com/a-/ACSszfGXKWd3tA-jxTE7DavDR6ElciSzd7mHOSyFJA=s900-mo-c-c0xffffffff-rj-k-no"
         alt="名取さなのアイコン"
-        width="30%"
+        width="20%"
       >
       <a href="https://twitter.com/sana_natori">
         <img src="static/images/Twitter.png" alt="Twitter アカウントへのリンク画像">
@@ -22,7 +22,7 @@
       class="twitter-timeline"
       href="https://twitter.com/sana_natori?ref_src=twsrc%5Etfw"
       data-width="100%"
-      data-height="570"
+      data-height="600"
     >Tweets by sana_natori</a>
   </div>
 </template>
