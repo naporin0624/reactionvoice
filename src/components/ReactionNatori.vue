@@ -25,19 +25,15 @@
 
         <div class="form grid-contener" v-for="vlt in voiceLinkTexts" v-bind:key="vlt.unique">
           <!-- 単語入力欄 -->
-          <input type="text" v-model="vlt.input" style="width: 150px;">
+          <input type="text" v-model="vlt.input" style="width: 90%;">
           <!-- 放送タイトル選択欄 -->
-          <select
-            v-model="vlt.select.category"
-            @change="axiosGetNameList(vlt)"
-            style="width: 150px"
-          >
+          <select v-model="vlt.select.category" @change="axiosGetNameList(vlt)" style="width: 90%">
             <option disabled value>何か一つ選んでね</option>
             <option v-for="title in broadcastCategory" v-bind:key="title + Math.random()">{{title}}</option>
           </select>
 
           <!-- 発火ボイス登録 -->
-          <select v-model="vlt.select.name" @change="axiosGetURL(vlt)" style="width: 150px">
+          <select v-model="vlt.select.name" @change="axiosGetURL(vlt)" style="width: 90%">
             <option disabled value v-show="vlt.select.category==''">何か一つ選んでね</option>
             <option disabled value v-show="vlt.select.category!=''">先に放送タイトルを選んでね</option>
             <!-- keyがダブることがあるのでrandomを使っている -->
@@ -344,7 +340,7 @@ button {
 
 .input-box-label {
   display: inline-block;
-  width: 150px;
+  width: 100%;
   font-size: 90%;
   text-align: center;
 }
@@ -352,7 +348,7 @@ button {
 .select-category-label {
   display: inline-block;
   /* background-color: #fff; */
-  width: 150px;
+  width: 100%;
   font-size: 90%;
   text-align: center;
 }
@@ -360,7 +356,7 @@ button {
 .select-contents-label {
   display: inline-block;
   /* background-color: #fff; */
-  width: 150px;
+  width: 100%;
   font-size: 90%;
   text-align: center;
 }
