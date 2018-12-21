@@ -41,8 +41,8 @@
 
           <!-- 発火ボイス登録 -->
           <select v-model="vlt.select.name" @change="axiosGetURL(vlt)" style="width: 90%">
-            <option disabled value v-show="vlt.select.category==''">何か一つ選んでね</option>
-            <option disabled value v-show="vlt.select.category!=''">先に放送タイトルを選んでね</option>
+            <option disabled value v-show="vlt.select.category">何か一つ選んでね</option>
+            <option disabled value v-show="!vlt.select.category">先に放送タイトルを選んでね</option>
             <!-- keyがダブることがあるのでrandomを使っている -->
             <!-- そのうち直さないとまずいことになりそうな予感がある -->
             <option v-for="name in vlt.nameList" v-bind:key="name + Math.random()">{{name}}</option>
