@@ -2,13 +2,14 @@
   <div>
     <h1 class="title">ResponSa-na</h1>
 
-    <div class>
+    <div>
       <u>
         <b>さなちゃんからいつも元気貰ってます、ありがとう！
           <br>勝手に作っちゃってごめんなさい
         </b>
       </u>
     </div>
+
     <div class="start-button-contents">
       <label>音声認識ボタンをおしてね！</label>
       <button class="start" @click="toggle" v-show="!recogFlag">音声取得開始</button>
@@ -21,9 +22,20 @@
       </div>
 
       <div class="center-box">
-        <div class="add">
+        <div class="button-list">
           <button @click="listPush" v-bind:disabled="!canPush">追加する</button>
+          <br>
+          <label>テンプレ選択</label>
+          <select v-model="templateName" @change="axiosGetTemplate" style="width: 20%">
+            <option disabled value>使いたいテンプレを選んでね</option>
+            <option v-for="name in templateNameList" v-bind:key="name + Math.random()">{{name}}</option>
+          </select>
+          <label>テンプレタイトル</label>
+          <input type="text" v-model="templateName" style="width: 20%">
+          <button @click="axiosNewSaveTemplate" v-bind:disabled="!canSave">新規保存</button>
+          <button @click="axiosEditSaveTemplate" v-bind:disabled="!canSave">上書き保存</button>
         </div>
+
         <div class="grid-contener">
           <div class="input-box-label">反応させたい言葉</div>
           <div class="select-category-label">放送タイトル</div>
@@ -73,7 +85,8 @@ export default {
   data() {
     return {
       //バックエンド接続先
-      apiHost: "https://responsa-na.herokuapp.com/",
+      // apiHost: "https://responsa-na.herokuapp.com/",
+      apiHost: "http://localhost:5000",
       //音声認識API
       recognition: new webkitSpeechRecognition(),
       //ユーザーが認識結果を見るための変数
@@ -88,6 +101,8 @@ export default {
       recogFlag: false,
       //イベントに引っかかった音声をQueに積む
       playQue: [],
+      templateNameList: null,
+      templateName: "",
       //各入力フォームが持つ変数
       voiceLinkTexts: [
         {
@@ -162,7 +177,7 @@ export default {
     },
     axiosGetURL(vlt) {
       //console.log("getURL");
-      return axios
+      axios
         .get(this.apiHost + "/api/sana/voiceurl", {
           params: {
             category: vlt.select.category,
@@ -192,6 +207,66 @@ export default {
           this.playQue.push(item.audio);
         }
       }
+    },
+
+    axiosGetTemplateNameList() {
+      // console.log("axiosGetTemplateNameList");
+      axios
+        .get(this.apiHost + "/api/sana/template/show")
+        .then(res => {
+          var temp = res.data.tempNameList;
+          if (temp.length > 0) this.templateNameList = temp;
+          else this.templateNameList = ["まだ作られてないよ"];
+        })
+        .catch(res => {
+          console.log(res);
+        });
+    },
+
+    axiosGetTemplate(e) {
+      // console.log("axiosGetTemplate");
+      axios
+        .get(this.apiHost + "/api/sana/template/data", {
+          params: {
+            name: e.target.value
+          }
+        })
+        .then(res => {
+          var temp = res.data.voiceLinkTexts;
+          if (temp.length > 0)
+            this.voiceLinkTexts = temp.map(x => JSON.parse(x));
+        });
+    },
+
+    axiosNewSaveTemplate() {
+      // console.log("axiosNewSaveTemplate");
+      axios
+        .post(this.apiHost + "/api/sana/template/data", {
+          name: this.templateName,
+          template: this.voiceLinkTexts.map(x => JSON.stringify(x))
+        })
+        .then(res => {
+          alert(res.data.msg);
+        })
+        .catch(res => {
+          console.log(res);
+          alert("保存に失敗しました");
+        });
+    },
+    axiosEditSaveTemplate() {
+      console.log("axiosEditSaveTemplate");
+      axios
+        .put(this.apiHost + "/api/sana/template/data", {
+          name: this.templateName,
+          template: this.voiceLinkTexts.map(x => JSON.stringify(x))
+        })
+        .then(res => {
+          alert(res.data.msg);
+        })
+        .catch(res => {
+          console.log(res);
+          alert("保存に失敗しました");
+        });
     }
   },
   computed: {
@@ -202,6 +277,9 @@ export default {
     canDelete() {
       //console.log("canDelete");
       return this.voiceLinkTexts.length - 1;
+    },
+    canSave() {
+      return this.templateName.length;
     }
   },
   watch: {
@@ -218,6 +296,7 @@ export default {
   created() {
     //console.log("created");
     this.axiosGetCategory();
+    this.axiosGetTemplateNameList();
     //webkitの使用機能やイベントを設定
     //日本語を読み取る
     this.recognition.lang = "ja";
@@ -339,8 +418,10 @@ button {
   font-size: 20px;
 }
 
-.add {
+.button-list {
   text-align: left;
+  font-size: 15px;
+  padding: 5px;
 }
 
 .grid-contener {
