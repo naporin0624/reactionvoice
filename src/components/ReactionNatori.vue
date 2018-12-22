@@ -85,8 +85,8 @@ export default {
   data() {
     return {
       //バックエンド接続先
-      // apiHost: "https://responsa-na.herokuapp.com/",
-      apiHost: "http://localhost:5000",
+      apiHost: "https://responsa-na.herokuapp.com/",
+      // apiHost: "http://localhost:5000",
       //音声認識API
       recognition: new webkitSpeechRecognition(),
       //ユーザーが認識結果を見るための変数
