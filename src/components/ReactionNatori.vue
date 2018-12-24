@@ -333,13 +333,15 @@ export default {
     /*ResponSa-naの根幹となる機能*/
     //キューに音声URLをセット
     audioSetQue(text) {
-      //console.log("audioSetQue");
-      if (this.flag.pageStatus == "Home") var config = this.retentionData;
+      console.log("audioSetQue");
+
+      if (this.flag.pageStatus == "home") var config = this.retentionData;
       else if (this.flag.pageStatus == "localConfig")
         var config = this.localShowData;
       else if (this.flag.pageStatus == "globalConfig")
         var config = this.globalShowData;
       else return;
+      console.log(config);
       for (var item in config) {
         if (~text.indexOf(config[item].input))
           this.playQue.push(config[item].audio);
