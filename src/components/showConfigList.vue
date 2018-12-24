@@ -104,11 +104,13 @@ export default {
 .col-sm-3 {
   text-align: center;
 }
+
 .scroll {
   height: 400px;
   overflow-y: scroll;
   margin-bottom: 1px;
 }
+
 .hover:hover {
   background-color: #f5dbe7;
 }

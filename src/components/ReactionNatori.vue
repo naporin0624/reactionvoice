@@ -3,7 +3,9 @@
     <header>
       <a href="#" @click="homeClick" class="title">ResponSa-na</a>
       <a href="#" @click="homeClick" class="home">Home</a>
-      <a href="#" @click="templateClick" class="template">最強のコンフィグ集</a>
+      <a href="#" @click="localConfigClick" class="localtemplate">コンフィグ</a>
+      <a href="#" @click="globalConfigClick" class="template">みんなののコンフィグ集</a>
+      <a href="#" @click="rankingClick" class="ranking">コンフィグ使用ランキング</a>
       <a href="#" @click="howtouseClick" class="howtouse">このアプリについて</a>
     </header>
     <a
@@ -20,67 +22,36 @@
     </div>
 
     <div class="main-content-box">
-      <!-- <div class="button-list">
-          <label>テンプレ選択</label>
-          <select v-model="template.name" @change="axiosGetTemplate" style="width: 20%">
-            <option disabled value>使いたいテンプレを選んでね</option>
-            <option v-for="name in template.nameList" v-bind:key="name + Math.random()">{{name}}</option>
-          </select>
-          <label>テンプレタイトル</label>
-          <input type="text" v-model="template.name" style="width: 20%">
-          <button @click="axiosNewSaveTemplate" v-bind:disabled="!canSave">新規保存</button>
-          <button @click="axiosEditSaveTemplate" v-bind:disabled="!canSave">上書き保存</button>
-      </div>-->
-      <!-- このアプリについて以外の時はこのコンポーネントを表示させる -->
-      <transition name="start-button">
-        <startbutton-component
-          v-if="flag.pageStatus!='how'"
-          v-bind:flag="flag"
-          v-on:toggle="toggle"
-        ></startbutton-component>
-      </transition>
-      <!-- 録音が開始されてこのアプリについて以外の時はこのコンポーネントを表示させる -->
-      <transition name="recog">
-        <fieldset v-if="flag.recog && flag.pageStatus!='how'">
-          <legend>喋った言葉をここに表示するよ</legend>
-          <talkinglog-component class="talking-component" v-bind:voiceText="showInputText"></talkinglog-component>
-        </fieldset>
-      </transition>
+      <!-- Home -->
+      <div class="home" v-if="flag.pageStatus=='home'">
+        <startbutton-component v-bind:flag="flag" v-on:toggle="toggle"></startbutton-component>
+        <transition class="Home-input-output-change">
+          <fieldset v-if="flag.recog">
+            <legend>喋った言葉をここに表示するよ</legend>
+            <talkinglog-component class="talking-component" v-bind:voiceText="showInputText"></talkinglog-component>
+          </fieldset>
 
-      <transition name="config-input">
-        <!-- 録音が開始されてない状態かつページがホームならこのコンポーネントを表示させる -->
-        <fieldset v-if="!flag.recog && flag.pageStatus=='home'">
-          <legend>反応ボイスを入力してね</legend>
-          <inputform-component
-            class="input-form-component"
-            v-bind:selector="selector"
-            v-bind:showInputForm="formContents"
-            v-on:input="handleInput"
-            v-on:selectTitle="handleSelectTitle"
-            v-on:selectButton="handleSelectButton"
-          ></inputform-component>
-          <div class="add-button">
-            <button class="small" @click="listPush" v-bind:disabled="!checkFillData">この設定で追加する</button>
-          </div>
-        </fieldset>
+          <fieldset v-else>
+            <legend>反応ボイスを入力してね</legend>
 
-        <!-- 録音が開始されてない状態かつページがコンフィグ集ならこのコンポーネントを表示させる -->
-        <fieldset v-if="!flag.recog && flag.pageStatus=='template'">
-          <legend>コンフィグを選択してね</legend>
-          <templateselector-component
-            class="config-select-component"
-            v-bind:template="template"
-            v-on:selectTemplateName="handleUseTemplate"
-            v-on:updateTemplate="updateTemplate"
-          ></templateselector-component>
-        </fieldset>
-      </transition>
+            <inputform-component
+              class="input-form-component"
+              v-bind:selector="selector"
+              v-bind:showInputForm="formContents"
+              v-on:input="handleInput"
+              v-on:selectTitle="handleSelectTitle"
+              v-on:selectButton="handleSelectButton"
+            ></inputform-component>
 
-      <!-- このアプリについて以外の時はこのコンポーネントを表示させる -->
-      <transition name="config-list">
-        <fieldset v-if="flag.pageStatus!='how'">
+            <div class="add-button">
+              <button class="small" @click="listPush" v-bind:disabled="!checkFillData">この設定で追加する</button>
+            </div>
+          </fieldset>
+        </transition>
+
+        <fieldset>
           <legend>コンフィグリスト</legend>
-          <div class="template-save" v-if="flag.pageStatus=='home'">
+          <div class="template-save">
             <label>コンフィグ名</label>
             <input type="text" v-model="saveTemplate.name">
             <button
@@ -89,6 +60,7 @@
               @click="saveConfigTempraryData"
             >コンフィグ保存</button>
           </div>
+
           <showconfig-component
             class="show-config-component"
             v-bind:showConfigList="retentionData"
@@ -97,11 +69,66 @@
             v-on:editResult="pushEditButton"
           ></showconfig-component>
         </fieldset>
-      </transition>
+      </div>
 
-      <transition name="discription">
-        <discription-component v-if="flag.pageStatus=='how'"></discription-component>
-      </transition>
+      <div class="local-config" v-else-if="flag.pageStatus=='localConfig'">
+        <startbutton-component v-bind:flag="flag" v-on:toggle="toggle"></startbutton-component>
+
+        <transition class="localConfig-input-output-change">
+          <fieldset v-if="flag.recog">
+            <legend>喋った言葉をここに表示するよ</legend>
+            <talkinglog-component class="talking-component" v-bind:voiceText="showInputText"></talkinglog-component>
+          </fieldset>
+
+          <fieldset v-else>
+            <legend>ローカルコンフィグだよ〜</legend>
+            <templateselector-component
+              v-bind:template="Object.keys(configTemporaryData)"
+              v-on:selectTemplateName="setConfigToRetentionData"
+            ></templateselector-component>
+          </fieldset>
+        </transition>
+        <fieldset>
+          <legend>コンフィグリスト</legend>
+          <div class="template-save">
+            <label>公開する名前</label>
+            <input type="text">
+            <button>公開</button>
+          </div>
+          <showOnly-component class="show-config-component" v-bind:showConfigList="localShowData"></showOnly-component>
+        </fieldset>
+      </div>
+
+      <div class="global-config" v-else-if="flag.pageStatus=='globalConfig'">
+        <startbutton-component v-bind:flag="flag" v-on:toggle="toggle"></startbutton-component>
+
+        <transition class="globalConfig-input-output-change">
+          <fieldset v-if="flag.recog">
+            <legend>喋った言葉をここに表示するよ</legend>
+            <talkinglog-component class="talking-component" v-bind:voiceText="showInputText"></talkinglog-component>
+          </fieldset>
+
+          <fieldset v-else>
+            <legend>グローバルコンフィグだよ〜</legend>
+            <templateselector-component
+              class="config-select-component"
+              v-bind:template="template.selectList"
+              v-on:selectTemplateName="handleUseTemplate"
+              v-on:updateTemplate="updateTemplate"
+            ></templateselector-component>
+          </fieldset>
+        </transition>
+        <fieldset>
+          <legend>コンフィグリスト</legend>
+          <showOnly-component class="show-config-component" v-bind:showConfigList="globalShowData"></showOnly-component>
+        </fieldset>
+      </div>
+
+      <div class="ranking" v-else-if="flag.pageStatus=='ranking'"></div>
+
+      <div class="how-to-use" v-else>
+        <discription-component></discription-component>
+      </div>
     </div>
   </div>
 </template>
@@ -116,6 +143,7 @@ import inputForm from "./inputForm";
 import showConfigList from "./showConfigList";
 import talkingLog from "./talingLog";
 import templateSelector from "./templateSelector";
+import showOnlyConfigList from "./showOnlyConfigList";
 
 export default {
   name: "reactionNatori",
@@ -125,6 +153,7 @@ export default {
     "widget-component": widget,
     "inputform-component": inputForm,
     "showconfig-component": showConfigList,
+    "showOnly-component": showOnlyConfigList,
     "talkinglog-component": talkingLog,
     "templateselector-component": templateSelector
   },
@@ -139,6 +168,10 @@ export default {
       playQue: [],
       //保存しておくデータ群
       retentionData: [],
+      //ローカルコンフィグで表示するデータ
+      localShowData: [],
+      //グローバルコンフィグで表示するデータ
+      globalShowData: [],
       //コンフィグ一時保存データ
       //データ構造
       /*{
@@ -293,7 +326,12 @@ export default {
     //キューに音声URLをセット
     audioSetQue(text) {
       console.log("audioSetQue");
-      var config = this.retentionData;
+      if (this.flag.pageStatus == "Home") var config = this.retentionData;
+      else if (this.flag.pageStatus == "localConfig")
+        var config = this.localShowData;
+      else if (this.flag.pageStatus == "globalConfig")
+        var config = this.globalShowData;
+      else return;
       for (var item in config) {
         if (~text.indexOf(config[item].input))
           this.playQue.push(config[item].audio);
@@ -348,16 +386,30 @@ export default {
         .then(console.log("axiosGetURL finish"));
     },
 
-    /*テンプレート機能*/
+    /*ローカルテンプレート機能*/
+    setConfigToRetentionData(configName) {
+      console.log("setConfigToRetentionData");
+      this.localShowData = this.deepcopy(this.configTemporaryData[configName]);
+    },
+    //ローカルコンフィグに保存
+    saveConfigTempraryData() {
+      console.log("saveConfigTempraryData");
+      this.configTemporaryData[this.saveTemplate.name] = this.deepcopy(
+        this.retentionData
+      );
+      console.log(this.configTemporaryData);
+      this.retentionData = [];
+      this.saveTemplate.name = "";
+    },
+
+    /*グローバルテンプレート機能*/
     //テンプレリストをDBから取得
     axiosGetTemplateNameList() {
       console.log("axiosGetTemplateNameList");
       axios
         .get(this.apiHost + "template/show")
         .then(res => {
-          var temp = res.data.templateNameList;
-          if (temp.length > 0) this.template.selectList = temp;
-          else this.template.selectList = ["まだ作られてないよ"];
+          this.template.selectList = res.data.templateNameList;
         })
         .catch(res => {
           console.log(res);
@@ -374,18 +426,10 @@ export default {
         })
         .then(res => {
           var temp = res.data.retentionData;
-          if (temp.length > 0) console.log(temp.map(x => JSON.parse(x)));
+          if (temp.length > 0) globalShowData = temp.map(x => JSON.parse(x));
         });
     },
-    saveConfigTempraryData() {
-      console.log("saveConfigTempraryData");
-      this.configTemporaryData[this.saveTemplate.name] = this.deepcopy(
-        this.retentionData
-      );
-      console.log(this.configTemporaryData);
-      this.retentionData = [];
-      this.saveTemplate.name = "";
-    },
+
     axiosNewSaveTemplate() {
       console.log("axiosNewSaveTemplate");
       axios
@@ -423,10 +467,19 @@ export default {
       this.pageChangeFunc();
       this.flag.pageStatus = "home";
     },
-    templateClick() {
-      console.log("templateClick");
+    localConfigClick() {
+      console.log("localConfigClick");
+      this.flag.pageStatus = "localConfig";
+    },
+    globalConfigClick() {
+      console.log("globalConfigClick");
       this.pageChangeFunc();
-      this.flag.pageStatus = "template";
+      this.flag.pageStatus = "globalConfig";
+    },
+    rankingClick() {
+      console.log("rankingClick");
+      this.pageChangeFunc();
+      this.flag.pageStatus = "ranking";
     },
     howtouseClick() {
       console.log("howtouseClick");

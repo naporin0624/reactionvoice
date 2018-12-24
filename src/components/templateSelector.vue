@@ -6,8 +6,8 @@
       </div>
       <div class="col-sm-12 col-md-6 template-selector">
         <select @change="selectTemplate">
-          <option disabled value>使いたいボイズセットを選んでね</option>
-          <option v-for="name in template.selectList" v-bind:key="name">{{name}}</option>
+          <option>使いたいボイスセットを選んでね</option>
+          <option v-for="name in template" v-bind:key="name">{{name}}</option>
         </select>
       </div>
       <div class="col-sm-12 col-md-3 template-button">
@@ -21,12 +21,17 @@
 export default {
   name: "templateSelector",
   props: {
-    template: Object
+    template: Array
   },
   methods: {
     selectTemplate(e) {
       console.log("selectTemplate");
-      this.$emit("selectTemplateName", e.target.value);
+      console.log(e.target.value);
+      if (
+        e.target.value != "使いたいボイスセットを選んでね" &&
+        e.target.value != "まだ作られてないよ"
+      )
+        this.$emit("selectTemplateName", e.target.value);
     },
     update() {
       console.log("updateTemplate");
