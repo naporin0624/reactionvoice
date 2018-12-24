@@ -25,8 +25,8 @@ export default {
   },
   methods: {
     selectTemplate(e) {
-      console.log("selectTemplate");
-      console.log(e.target.value);
+      //console.log("selectTemplate");
+      //console.log(e.target.value);
       if (
         e.target.value != "使いたいボイスセットを選んでね" &&
         e.target.value != "まだ作られてないよ"
@@ -34,7 +34,7 @@ export default {
         this.$emit("selectTemplateName", e.target.value);
     },
     update() {
-      console.log("updateTemplate");
+      //console.log("updateTemplate");
       this.$emit("updateTemplate");
     }
   }

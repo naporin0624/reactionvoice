@@ -5,7 +5,9 @@
       <a href="#" @click="homeClick" class="home">Home</a>
       <a href="#" @click="localConfigClick" class="localtemplate">コンフィグ</a>
       <a href="#" @click="globalConfigClick" class="template">みんなののコンフィグ集</a>
-      <a href="#" @click="rankingClick" class="ranking">コンフィグ使用ランキング</a>
+      <a href="#" @click="rankingClick" class="ranking">
+        <s>コンフィグ使用ランキング</s>
+      </a>
       <a href="#" @click="howtouseClick" class="howtouse">このアプリについて</a>
     </header>
     <a
@@ -22,10 +24,10 @@
     </div>
 
     <div class="main-content-box">
-      <!-- Home -->
-      <div class="home" v-if="flag.pageStatus=='home'">
-        <startbutton-component v-bind:flag="flag" v-on:toggle="toggle"></startbutton-component>
-        <transition class="Home-input-output-change">
+      <transition appear>
+        <!-- Home -->
+        <div class="home" v-if="flag.pageStatus=='home'">
+          <startbutton-component v-bind:flag="flag" v-on:toggle="toggle"></startbutton-component>
           <fieldset v-if="flag.recog">
             <legend>喋った言葉をここに表示するよ</legend>
             <talkinglog-component class="talking-component" v-bind:voiceText="showInputText"></talkinglog-component>
@@ -47,34 +49,32 @@
               <button class="small" @click="listPush" v-bind:disabled="!checkFillData">この設定で追加する</button>
             </div>
           </fieldset>
-        </transition>
 
-        <fieldset>
-          <legend>コンフィグリスト</legend>
-          <div class="template-save">
-            <label>コンフィグ名</label>
-            <input type="text" v-model="saveToLocalData.name">
-            <button
-              class="small"
-              v-bind:disabled="!canSaveToLocal"
-              @click="saveConfigTempraryData"
-            >コンフィグ保存</button>
-          </div>
+          <fieldset>
+            <legend>コンフィグリスト</legend>
+            <div class="template-save">
+              <label>コンフィグ名</label>
+              <input type="text" v-model="saveToLocalData.name">
+              <button
+                class="small"
+                v-bind:disabled="!canSaveToLocal"
+                @click="saveConfigTempraryData"
+              >コンフィグ保存</button>
+            </div>
 
-          <showconfig-component
-            class="show-config-component"
-            v-bind:showConfigList="retentionData"
-            v-bind:selector="selector"
-            v-on:del="pushDeleteButton"
-            v-on:editResult="pushEditButton"
-          ></showconfig-component>
-        </fieldset>
-      </div>
+            <showconfig-component
+              class="show-config-component"
+              v-bind:showConfigList="retentionData"
+              v-bind:selector="selector"
+              v-on:del="pushDeleteButton"
+              v-on:editResult="pushEditButton"
+            ></showconfig-component>
+          </fieldset>
+        </div>
 
-      <div class="local-config" v-else-if="flag.pageStatus=='localConfig'">
-        <startbutton-component v-bind:flag="flag" v-on:toggle="toggle"></startbutton-component>
+        <div class="local-config" v-else-if="flag.pageStatus=='localConfig'">
+          <startbutton-component v-bind:flag="flag" v-on:toggle="toggle"></startbutton-component>
 
-        <transition class="localConfig-input-output-change">
           <fieldset v-if="flag.recog">
             <legend>喋った言葉をここに表示するよ</legend>
             <talkinglog-component class="talking-component" v-bind:voiceText="showInputText"></talkinglog-component>
@@ -87,22 +87,21 @@
               v-on:selectTemplateName="setConfigToRetentionData"
             ></templateselector-component>
           </fieldset>
-        </transition>
-        <fieldset>
-          <legend>コンフィグリスト</legend>
-          <div class="template-save">
-            <label>公開する名前</label>
-            <input type="text" v-model="saveToGlobalData.name">
-            <button @click="axiosNewSaveToGlobal">公開</button>
-          </div>
-          <showOnly-component class="show-config-component" v-bind:showConfigList="localShowData"></showOnly-component>
-        </fieldset>
-      </div>
 
-      <div class="global-config" v-else-if="flag.pageStatus=='globalConfig'">
-        <startbutton-component v-bind:flag="flag" v-on:toggle="toggle"></startbutton-component>
+          <fieldset>
+            <legend>コンフィグリスト</legend>
+            <div class="template-save">
+              <label>公開する名前</label>
+              <input type="text" v-model="saveToGlobalData.name">
+              <button @click="axiosNewSaveToGlobal" v-bind:disabled="saveToGlobalData.name==''">公開</button>
+            </div>
+            <showOnly-component class="show-config-component" v-bind:showConfigList="localShowData"></showOnly-component>
+          </fieldset>
+        </div>
 
-        <transition class="globalConfig-input-output-change">
+        <div class="global-config" v-else-if="flag.pageStatus=='globalConfig'">
+          <startbutton-component v-bind:flag="flag" v-on:toggle="toggle"></startbutton-component>
+
           <fieldset v-if="flag.recog">
             <legend>喋った言葉をここに表示するよ</legend>
             <talkinglog-component class="talking-component" v-bind:voiceText="showInputText"></talkinglog-component>
@@ -117,18 +116,24 @@
               v-on:updateTemplate="updateTemplate"
             ></templateselector-component>
           </fieldset>
-        </transition>
-        <fieldset>
-          <legend>コンフィグリスト</legend>
-          <showOnly-component class="show-config-component" v-bind:showConfigList="globalShowData"></showOnly-component>
-        </fieldset>
-      </div>
 
-      <div class="ranking" v-else-if="flag.pageStatus=='ranking'"></div>
+          <fieldset>
+            <legend>コンフィグリスト</legend>
+            <showOnly-component
+              class="show-config-component"
+              v-bind:showConfigList="globalShowData"
+            ></showOnly-component>
+          </fieldset>
+        </div>
 
-      <div class="how-to-use" v-else>
-        <discription-component></discription-component>
-      </div>
+        <div class="ranking" v-else-if="flag.pageStatus=='ranking'">
+          <ranking-component></ranking-component>
+        </div>
+
+        <div class="how-to-use" v-else>
+          <discription-component></discription-component>
+        </div>
+      </transition>
     </div>
   </div>
 </template>
@@ -144,6 +149,7 @@ import showConfigList from "./showConfigList";
 import talkingLog from "./talingLog";
 import templateSelector from "./templateSelector";
 import showOnlyConfigList from "./showOnlyConfigList";
+import ranking from "./ranking";
 
 export default {
   name: "reactionNatori",
@@ -155,7 +161,8 @@ export default {
     "showconfig-component": showConfigList,
     "showOnly-component": showOnlyConfigList,
     "talkinglog-component": talkingLog,
-    "templateselector-component": templateSelector
+    "templateselector-component": templateSelector,
+    "ranking-component": ranking
   },
   data() {
     return {
@@ -254,7 +261,7 @@ export default {
   },
   methods: {
     toggle(e) {
-      console.log("toggle");
+      //console.log("toggle");
       this.flag.recog = !this.flag.recog;
       if (this.flag.recog) {
         this.showInputText = "";
@@ -262,7 +269,7 @@ export default {
       } else this.API.recognition.stop();
     },
     listPush(e) {
-      console.log("listPush");
+      //console.log("listPush");
       if (this.retentionData.length >= 20)
         alert("20アイテム以上は登録できないよ");
       else {
@@ -283,50 +290,50 @@ export default {
 
     //inputFormからのinputデータをformContentsのinputに入れる
     handleInput(input) {
-      console.log("handleInput");
+      //console.log("handleInput");
       this.formContents.input = input;
     },
     //inputFormからのselectTitleデータをformContentsのselectTitleに入れる
     handleSelectTitle(title) {
-      console.log("handleSelectTitle");
+      //console.log("handleSelectTitle");
       this.formContents.selectTitle = title;
       this.axiosGetButtonList(title);
     },
     //inputFormからのselectButtonデータをformContentsのselectButtonに入れる
     handleSelectButton(button) {
-      console.log("handleSelectName");
+      //console.log("handleSelectName");
       this.formContents.selectButton = button;
       this.axiosGetURL(button);
     },
     //テンプレート選択時の挙動
     handleUseTemplate(selectTemplateName) {
-      console.log("handleUseTemplate");
+      //console.log("handleUseTemplate");
       this.global.name = selectTemplateName;
       this.axiosGetGlobalConfig(this.global.name);
     },
     //showConfigListからのボタンイベントで発火
     pushEditButton(config) {
-      console.log("pushEditButton");
+      //console.log("pushEditButton");
       var index = this.retentionData.findIndex(item => item.id === config.id);
       this.retentionData[index] = this.deepcopy(config);
     },
     //showConfigListからの削除ボタンイベントで発火
     //削除を押されたコンフィグを削除します
     pushDeleteButton(id) {
-      console.log("pushDeleteButton");
+      //console.log("pushDeleteButton");
       var newArray = this.retentionData.filter(item => item.id !== id);
       this.retentionData = newArray;
     },
     //テンプレートを更新する
     updateTemplate(e) {
-      console.log("updateTemplate");
+      //console.log("updateTemplate");
       this.axiosGetGlobalNameList();
     },
 
     /*ResponSa-naの根幹となる機能*/
     //キューに音声URLをセット
     audioSetQue(text) {
-      console.log("audioSetQue");
+      //console.log("audioSetQue");
       if (this.flag.pageStatus == "Home") var config = this.retentionData;
       else if (this.flag.pageStatus == "localConfig")
         var config = this.localShowData;
@@ -340,7 +347,7 @@ export default {
     },
     //放送タイトルリストを取得
     axiosGetTitle() {
-      console.log("getCategory");
+      //console.log("getCategory");
       axios
         .get(this.apiHost + "category")
         .then(res => {
@@ -353,7 +360,7 @@ export default {
     },
     //選択された生放送のさなボタンを取得
     axiosGetButtonList(title) {
-      console.log("axiosetNameList");
+      //console.log("axiosetNameList");
       axios
         .get(this.apiHost + "names", {
           params: {
@@ -370,7 +377,7 @@ export default {
     },
     //選択されたさなボタンからURLを取得
     axiosGetURL(button) {
-      console.log("axiosGetURL");
+      //console.log("axiosGetURL");
       axios
         .get(this.apiHost + "voiceurl", {
           params: {
@@ -389,16 +396,16 @@ export default {
 
     /*ローカルテンプレート機能*/
     setConfigToRetentionData(configName) {
-      console.log("setConfigToRetentionData");
+      //console.log("setConfigToRetentionData");
       this.localShowData = this.deepcopy(this.configTemporaryData[configName]);
     },
     //ローカルコンフィグリストに保存
     saveConfigTempraryData() {
-      console.log("saveConfigTempraryData");
+      //console.log("saveConfigTempraryData");
       this.configTemporaryData[this.saveToLocalData.name] = this.deepcopy(
         this.retentionData
       );
-      console.log(this.configTemporaryData);
+      //console.log(this.configTemporaryData);
       this.retentionData = [];
       this.saveToLocalData.name = "";
     },
@@ -406,7 +413,7 @@ export default {
     /*グローバルテンプレート機能*/
     //テンプレリストをDBから取得
     axiosGetGlobalNameList() {
-      console.log("axiosGetGlobalNameList");
+      //console.log("axiosGetGlobalNameList");
       axios
         .get(this.apiHost + "template/show")
         .then(res => {
@@ -418,7 +425,7 @@ export default {
     },
     //選択されたテンプレから内部データを取得
     axiosGetGlobalConfig(name) {
-      console.log("axiosGetGlobalConfig");
+      //console.log("axiosGetGlobalConfig");
       axios
         .get(this.apiHost + "template/data", {
           params: {
@@ -433,7 +440,7 @@ export default {
     },
 
     axiosNewSaveToGlobal() {
-      console.log("axiosNewSaveToGlobal");
+      //console.log("axiosNewSaveToGlobal");
       axios
         .post(this.apiHost + "template/data", {
           name: this.saveToGlobalData.name,
@@ -450,26 +457,26 @@ export default {
 
     /*ページ変更っぽいやつ*/
     homeClick() {
-      console.log("homeClick");
+      //console.log("homeClick");
       this.pageChangeFunc();
       this.flag.pageStatus = "home";
     },
     localConfigClick() {
-      console.log("localConfigClick");
+      //console.log("localConfigClick");
       this.flag.pageStatus = "localConfig";
     },
     globalConfigClick() {
-      console.log("globalConfigClick");
+      //console.log("globalConfigClick");
       this.pageChangeFunc();
       this.flag.pageStatus = "globalConfig";
     },
     rankingClick() {
-      console.log("rankingClick");
+      //console.log("rankingClick");
       this.pageChangeFunc();
       this.flag.pageStatus = "ranking";
     },
     howtouseClick() {
-      console.log("howtouseClick");
+      //console.log("howtouseClick");
       this.pageChangeFunc();
       this.flag.pageStatus = "how";
     },
@@ -516,7 +523,7 @@ export default {
   },
   watch: {
     playQue() {
-      console.log("playAudio");
+      //console.log("playAudio");
       if (this.playQue.length > 0 && this.flag.audioStatus) {
         this.API.audio.src = this.playQue[0];
         this.flag.audioStatus = false;
@@ -603,23 +610,13 @@ header a {
   height: 40%;
 }
 
-.recog-enter-active,
-.config-input-enter-active,
-.config-list-enter-active,
-.discription-enter-active,
-.start-button-enter-active {
+.v-enter-active,
+.v-leave-active {
   transition: opacity 1500ms;
 }
-.recog-enter,
-.recog-leave-to,
-.config-input-enter,
-.config-input-leave-to,
-.config-list-enter,
-.config-list-leave-to,
-.discription-enter,
-.discription-leave-to,
-.start-button-enter,
-.start-button-leave-to {
+
+.v-enter,
+.v-leave-to {
   opacity: 0;
 }
 

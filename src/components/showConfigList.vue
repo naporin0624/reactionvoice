@@ -67,33 +67,33 @@ export default {
       return JSON.parse(JSON.stringify(json));
     },
     editStart(config) {
-      console.log("editStart");
+      //console.log("editStart");
       this.editStatus = true;
       this.showConfig = this.deepcopy(config);
     },
     editEnd(config) {
-      console.log("editEnd");
+      //console.log("editEnd");
       this.$emit("editResult", this.showConfig);
       // this.showConfig.id = null;
       this.editStatus = false;
     },
     del(id) {
-      console.log("del");
+      //console.log("del");
       this.$emit("del", id);
     },
     //inputFormからのinputデータをformContentsのinputに入れる
     handleInput(input) {
-      console.log("handleInput");
+      //console.log("handleInput");
       this.showConfig.input = input;
     },
     //inputFormからのselectTitleデータをformContentsのselectTitleに入れる
     handleSelectTitle(title) {
-      console.log("handleSelectTitle");
+      //console.log("handleSelectTitle");
       this.showConfig.selectTitle = title;
     },
     //inputFormからのselectButtonデータをformContentsのselectButtonに入れる
     handleSelectButton(button) {
-      console.log("handleSelectName");
+      //console.log("handleSelectName");
       this.showConfig.selectButton = button;
     }
   }
