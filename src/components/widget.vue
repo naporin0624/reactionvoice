@@ -1,6 +1,5 @@
 <template>
   <div>
-    <br>
     <div class="img">
       <img
         class="natori-sana-icon"

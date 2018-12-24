@@ -1,7 +1,16 @@
 <template>
   <div>
-    <h1 class="title">ResponSa-na</h1>
-
+    <header>
+      <a href="#" @click="homeClick" class="title">ResponSa-na</a>
+      <a href="#" @click="homeClick" class="home">Home</a>
+      <a href="#" @click="templateClick" class="template">最強のコンフィグ集</a>
+      <a href="#" @click="howtouseClick" class="howtouse">このアプリについて</a>
+    </header>
+    <a
+      href="https://twitter.com/share?ref_src=twsrc%5Etfw"
+      class="twitter-share-button"
+      data-show-count="true"
+    >Tweet</a>
     <div>
       <u>
         <b>さなちゃんからいつも元気貰ってます、ありがとう！
@@ -10,240 +19,379 @@
       </u>
     </div>
 
-    <div class="start-button-contents">
-      <label>音声認識ボタンをおしてね！</label>
-      <button class="start" @click="toggle" v-show="!recogFlag">音声取得開始</button>
-      <button class="end" @click="toggle" v-show="recogFlag">音声取得停止</button>
-    </div>
-
-    <div class="separate">
-      <div class="left-box">
-        <left-component v-bind:showInputText="showInputText"></left-component>
-      </div>
-
-      <div class="center-box">
-        <div class="button-list">
-          <button @click="listPush" v-bind:disabled="!canPush">追加する</button>
-          <br>
+    <div class="main-content-box">
+      <!-- <div class="button-list">
           <label>テンプレ選択</label>
-          <select v-model="templateName" @change="axiosGetTemplate" style="width: 20%">
+          <select v-model="template.name" @change="axiosGetTemplate" style="width: 20%">
             <option disabled value>使いたいテンプレを選んでね</option>
-            <option v-for="name in templateNameList" v-bind:key="name + Math.random()">{{name}}</option>
+            <option v-for="name in template.nameList" v-bind:key="name + Math.random()">{{name}}</option>
           </select>
           <label>テンプレタイトル</label>
-          <input type="text" v-model="templateName" style="width: 20%">
+          <input type="text" v-model="template.name" style="width: 20%">
           <button @click="axiosNewSaveTemplate" v-bind:disabled="!canSave">新規保存</button>
           <button @click="axiosEditSaveTemplate" v-bind:disabled="!canSave">上書き保存</button>
-        </div>
+      </div>-->
+      <!-- このアプリについて以外の時はこのコンポーネントを表示させる -->
+      <transition name="start-button">
+        <startbutton-component
+          v-if="flag.pageStatus!='how'"
+          v-bind:flag="flag"
+          v-on:toggle="toggle"
+        ></startbutton-component>
+      </transition>
+      <!-- 録音が開始されてこのアプリについて以外の時はこのコンポーネントを表示させる -->
+      <transition name="recog">
+        <fieldset v-if="flag.recog && flag.pageStatus!='how'">
+          <legend>喋った言葉をここに表示するよ</legend>
+          <talkinglog-component class="talking-component" v-bind:voiceText="showInputText"></talkinglog-component>
+        </fieldset>
+      </transition>
 
-        <div class="grid-contener">
-          <div class="input-box-label">反応させたい言葉</div>
-          <div class="select-category-label">放送タイトル</div>
-          <div class="select-contents-label">反応ボイス</div>
-        </div>
+      <transition name="config-input">
+        <!-- 録音が開始されてない状態かつページがホームならこのコンポーネントを表示させる -->
+        <fieldset v-if="!flag.recog && flag.pageStatus=='home'">
+          <legend>反応ボイスを入力してね</legend>
+          <inputform-component
+            class="input-form-component"
+            v-bind:selector="selector"
+            v-bind:showInputForm="formContents"
+            v-on:input="handleInput"
+            v-on:selectTitle="handleSelectTitle"
+            v-on:selectButton="handleSelectButton"
+          ></inputform-component>
+          <div class="add-button">
+            <button class="small" @click="listPush" v-bind:disabled="!checkFillData">この設定で追加する</button>
+          </div>
+        </fieldset>
 
-        <div class="form grid-contener" v-for="vlt in voiceLinkTexts" v-bind:key="vlt.unique">
-          <!-- 単語入力欄 -->
-          <input type="text" v-model="vlt.input" style="width: 90%;">
-          <!-- 放送タイトル選択欄 -->
-          <select v-model="vlt.select.category" @change="axiosGetNameList(vlt)" style="width: 90%">
-            <option disabled value>何か一つ選んでね</option>
-            <option v-for="title in broadcastCategory" v-bind:key="title + Math.random()">{{title}}</option>
-          </select>
+        <!-- 録音が開始されてない状態かつページがコンフィグ集ならこのコンポーネントを表示させる -->
+        <fieldset v-if="!flag.recog && flag.pageStatus=='template'">
+          <legend>コンフィグを選択してね</legend>
+          <templateselector-component
+            class="config-select-component"
+            v-bind:template="template"
+            v-on:selectTemplateName="handleUseTemplate"
+            v-on:updateTemplate="updateTemplate"
+          ></templateselector-component>
+        </fieldset>
+      </transition>
 
-          <!-- 発火ボイス登録 -->
-          <select v-model="vlt.select.name" @change="axiosGetURL(vlt)" style="width: 90%">
-            <option disabled value v-show="vlt.select.category">何か一つ選んでね</option>
-            <option disabled value v-show="!vlt.select.category">先に放送タイトルを選んでね</option>
-            <!-- keyがダブることがあるのでrandomを使っている -->
-            <!-- そのうち直さないとまずいことになりそうな予感がある -->
-            <option v-for="name in vlt.nameList" v-bind:key="name + Math.random()">{{name}}</option>
-          </select>
+      <!-- このアプリについて以外の時はこのコンポーネントを表示させる -->
+      <transition name="config-list">
+        <fieldset v-if="flag.pageStatus!='how'">
+          <legend>コンフィグリスト</legend>
+          <div class="template-save" v-if="flag.pageStatus=='home'">
+            <label>コンフィグ名</label>
+            <input type="text" v-model="saveTemplate.name">
+            <button
+              class="small"
+              v-bind:disabled="!canSaveTemplateName"
+              @click="saveConfigTempraryData"
+            >コンフィグ保存</button>
+          </div>
+          <showconfig-component
+            class="show-config-component"
+            v-bind:showConfigList="retentionData"
+            v-bind:selector="selector"
+            v-on:del="pushDeleteButton"
+            v-on:editResult="pushEditButton"
+          ></showconfig-component>
+        </fieldset>
+      </transition>
 
-          <button @click="delInputBox(vlt)" v-bind:disabled="!canDelete">削除する</button>
-        </div>
-      </div>
-
-      <div class="right-box">
-        <natori-component></natori-component>
-      </div>
+      <transition name="discription">
+        <discription-component v-if="flag.pageStatus=='how'"></discription-component>
+      </transition>
     </div>
   </div>
 </template>
 
 <script>
-import left from "./leftbox";
-import natoriwidgets from "./natoriWidgets";
 import axios from "axios";
-export default {
-  name: "Main",
 
+import startButton from "./startButton";
+import discription from "./discription";
+import widget from "./widget";
+import inputForm from "./inputForm";
+import showConfigList from "./showConfigList";
+import talkingLog from "./talingLog";
+import templateSelector from "./templateSelector";
+
+export default {
+  name: "reactionNatori",
   components: {
-    "left-component": left,
-    "natori-component": natoriwidgets
+    "startbutton-component": startButton,
+    "discription-component": discription,
+    "widget-component": widget,
+    "inputform-component": inputForm,
+    "showconfig-component": showConfigList,
+    "talkinglog-component": talkingLog,
+    "templateselector-component": templateSelector
   },
   data() {
     return {
       //バックエンド接続先
-      apiHost: "https://responsa-na.herokuapp.com/",
-      // apiHost: "http://localhost:5000",
-      //音声認識API
-      recognition: new webkitSpeechRecognition(),
+      // apiHost: "https://responsa-na.herokuapp.com/api/sana/",
+      apiHost: "http://localhost:5000/api/sana/",
       //ユーザーが認識結果を見るための変数
       showInputText: "",
-      //放送タイトルをセット
-      broadcastCategory: null,
-      //audioAPIをセット
-      audioObj: new Audio(),
-      //再生可能ならtrue, そうでないならfalse
-      audioFlag: true,
-      //録音開始ならtrue, そうでないならfalse
-      recogFlag: false,
-      //イベントに引っかかった音声をQueに積む
+      //イベントに引っかかった音声URLをQueに積む
       playQue: [],
-      templateNameList: null,
-      templateName: "",
+      //保存しておくデータ群
+      retentionData: [],
+      //コンフィグ一時保存データ
+      //データ構造
+      /*{
+       *  保存した名前1:[
+       *    {
+       *      configData...
+       *    },
+       *    {
+       *      configData...
+       *    },
+       *  ],
+       *  保存した名前2:[
+       *    {
+       *      configData...
+       *    },
+       *    {
+       *      configData...
+       *    },
+       *  ]
+       *}
+       */
+      configTemporaryData: {},
+
+      API: {
+        //音声認識API
+        recognition: new webkitSpeechRecognition(),
+        //オーディオ再生API
+        audio: new Audio()
+      },
+      /*
+       * flag.audioStatus
+       * 再生の待機状態を表すフラグ
+       * trueなら再生待機中
+       * falseからビジー状態
+       *
+       * flag.recog
+       * 音声認識の状態を表すフラグ
+       * trueなら音声録音開始
+       * falseなら停止
+       */
+      flag: {
+        audioStatus: true,
+        recog: false,
+        pageStatus: "home",
+        password: false
+      },
+      selector: {
+        title: null,
+        button: null
+      },
+      template: {
+        selectList: null,
+        name: null
+      },
+      saveTemplate: {
+        name: "",
+        password: ""
+      },
       //各入力フォームが持つ変数
-      voiceLinkTexts: [
-        {
-          //ユニークコード
-          unique: 0,
-          //表示する音声リスト
-          nameList: null,
-          //選択したカテゴリの記憶
-          select: {
-            category: null,
-            name: null
-          },
-          //反応させたい単語
-          input: null,
-          //再生するmp3のURL
-          audio: null
-        }
-      ]
+      formContents: {
+        //ユニークコード
+        //listPushで設定される
+        id: null,
+        //選択したカテゴリの記憶
+        //handleSelectTitleで設定される
+        selectTitle: null,
+        //ボタン名
+        //handleSelectButtonで設定される
+        selectButton: null,
+        //反応させたい単語
+        //handleInputで設定される
+        input: null,
+        //再生するmp3のURL
+        //axiosGetURLで設定される
+        audio: null
+      }
     };
   },
   methods: {
-    toggle() {
-      //console.log("toggle");
-      this.recogFlag = !this.recogFlag;
-      if (this.recogFlag) this.recognition.start();
-      else this.recognition.stop();
+    toggle(e) {
+      console.log("toggle");
+      this.flag.recog = !this.flag.recog;
+      if (this.flag.recog) {
+        this.showInputText = "";
+        this.API.recognition.start();
+      } else this.API.recognition.stop();
     },
-    listPush() {
-      //console.log("listPush");
-      this.voiceLinkTexts.push(this.independentObejct());
+    listPush(e) {
+      console.log("listPush");
+      if (this.retentionData.length >= 20)
+        alert("20アイテム以上は登録できないよ");
+      else {
+        var pushData = this.deepcopy(this.formContents);
+        var data = this.retentionData;
+        //retentionDataに何も入っていないときはidを0にして登録
+        if (data.length == 0) pushData.id = data.length;
+        //retentionDataにオブジェクトが入っているときは最後のid+1を登録する
+        else pushData.id = data[data.length - 1].id + 1;
+        this.retentionData.push(pushData);
+      }
     },
-    independentObejct() {
-      //console.log("independentObject");
-      return {
-        unique: this.voiceLinkTexts.length,
-        select: {
-          category: null,
-          name: null
-        },
-        nameList: null,
-        input: null,
-        audio: null
-      };
+    //jsonデータをディープコピー
+    deepcopy(json) {
+      return JSON.parse(JSON.stringify(json));
     },
-    axiosGetCategory() {
-      //console.log("getCategory");
+
+    /*v-onハンドラ系*/
+
+    //inputFormからのinputデータをformContentsのinputに入れる
+    handleInput(input) {
+      console.log("handleInput");
+      this.formContents.input = input;
+    },
+    //inputFormからのselectTitleデータをformContentsのselectTitleに入れる
+    handleSelectTitle(title) {
+      console.log("handleSelectTitle");
+      this.formContents.selectTitle = title;
+      this.axiosGetButtonList(title);
+    },
+    //inputFormからのselectButtonデータをformContentsのselectButtonに入れる
+    handleSelectButton(button) {
+      console.log("handleSelectName");
+      this.formContents.selectButton = button;
+      this.axiosGetURL(button);
+    },
+    //テンプレート選択時の挙動
+    handleUseTemplate(selectTemplateName) {
+      console.log("handleUseTemplate");
+      this.template.name = selectTemplateName;
+      this.axiosGetTemplate(this.template.name);
+    },
+    //showConfigListからのボタンイベントで発火
+    pushEditButton(config) {
+      console.log("pushEditButton");
+      var index = this.retentionData.findIndex(item => item.id === config.id);
+      this.retentionData[index] = this.deepcopy(config);
+    },
+    //showConfigListからの削除ボタンイベントで発火
+    //削除を押されたコンフィグを削除します
+    pushDeleteButton(id) {
+      console.log("pushDeleteButton");
+      var newArray = this.retentionData.filter(item => item.id !== id);
+      this.retentionData = newArray;
+    },
+    //テンプレートを更新する
+    updateTemplate(e) {
+      console.log("updateTemplate");
+      this.axiosGetTemplateNameList();
+    },
+
+    /*ResponSa-naの根幹となる機能*/
+    //キューに音声URLをセット
+    audioSetQue(text) {
+      console.log("audioSetQue");
+      var config = this.retentionData;
+      for (var item in config) {
+        if (~text.indexOf(config[item].input))
+          this.playQue.push(config[item].audio);
+      }
+    },
+    //放送タイトルリストを取得
+    axiosGetTitle() {
+      console.log("getCategory");
       axios
-        .get(this.apiHost + "/api/sana/category")
+        .get(this.apiHost + "category")
         .then(res => {
-          this.broadcastCategory = res.data.categorylist;
+          this.selector.title = res.data.categoryList;
         })
         .catch(res => {
           console.log(res);
         })
         .then(console.log("getCategory finsish"));
     },
-    axiosGetNameList(vlt) {
-      //console.log("getNameList");
+    //選択された生放送のさなボタンを取得
+    axiosGetButtonList(title) {
+      console.log("axiosetNameList");
       axios
-        .get(this.apiHost + "/api/sana/names", {
+        .get(this.apiHost + "names", {
           params: {
-            category: vlt.select.category
+            category: title
           }
         })
         .then(res => {
-          this.voiceLinkTexts[vlt.unique].nameList = res.data.voicelist;
+          this.selector.button = res.data.voiceList;
         })
         .catch(res => {
           console.log(res);
         })
-        .then(console.log("getNameList finish"));
+        .then(console.log("axiosGetNameList finish"));
     },
-    axiosGetURL(vlt) {
-      //console.log("getURL");
+    //選択されたさなボタンからURLを取得
+    axiosGetURL(button) {
+      console.log("axiosGetURL");
       axios
-        .get(this.apiHost + "/api/sana/voiceurl", {
+        .get(this.apiHost + "voiceurl", {
           params: {
-            category: vlt.select.category,
-            name: vlt.select.name
+            category: this.formContents.selectTitle,
+            name: this.formContents.selectButton
           }
         })
         .then(res => {
-          this.voiceLinkTexts[vlt.unique].audio = res.data.voiceurl;
+          this.formContents.audio = res.data.voiceURL;
         })
         .catch(res => {
           console.log(res);
         })
-        .then(console.log("getURL finish"));
-    },
-    delInputBox(vlt) {
-      //console.log("del");
-      this.voiceLinkTexts.splice(vlt.unique, 1);
-      //ラベルの振り直し
-      for (var i = 0; i < this.voiceLinkTexts.length; i++)
-        this.voiceLinkTexts[i].unique = i;
-    },
-    audioSetQue(text) {
-      for (var i = 0; i < this.voiceLinkTexts.length; i++) {
-        var item = this.voiceLinkTexts[i];
-        if (~text.indexOf(item.input)) {
-          //console.log(item.audio);
-          this.playQue.push(item.audio);
-        }
-      }
+        .then(console.log("axiosGetURL finish"));
     },
 
+    /*テンプレート機能*/
+    //テンプレリストをDBから取得
     axiosGetTemplateNameList() {
-      // console.log("axiosGetTemplateNameList");
+      console.log("axiosGetTemplateNameList");
       axios
-        .get(this.apiHost + "/api/sana/template/show")
+        .get(this.apiHost + "template/show")
         .then(res => {
-          var temp = res.data.tempNameList;
-          if (temp.length > 0) this.templateNameList = temp;
-          else this.templateNameList = ["まだ作られてないよ"];
+          var temp = res.data.templateNameList;
+          if (temp.length > 0) this.template.selectList = temp;
+          else this.template.selectList = ["まだ作られてないよ"];
         })
         .catch(res => {
           console.log(res);
         });
     },
-
-    axiosGetTemplate(e) {
-      // console.log("axiosGetTemplate");
+    //選択されたテンプレから内部データを取得
+    axiosGetTemplate(name) {
+      console.log("axiosGetTemplate");
       axios
-        .get(this.apiHost + "/api/sana/template/data", {
+        .get(this.apiHost + "template/data", {
           params: {
-            name: e.target.value
+            name: name
           }
         })
         .then(res => {
-          var temp = res.data.voiceLinkTexts;
-          if (temp.length > 0)
-            this.voiceLinkTexts = temp.map(x => JSON.parse(x));
+          var temp = res.data.retentionData;
+          if (temp.length > 0) console.log(temp.map(x => JSON.parse(x)));
         });
     },
-
+    saveConfigTempraryData() {
+      console.log("saveConfigTempraryData");
+      this.configTemporaryData[this.saveTemplate.name] = this.deepcopy(
+        this.retentionData
+      );
+      console.log(this.configTemporaryData);
+      this.retentionData = [];
+      this.saveTemplate.name = "";
+    },
     axiosNewSaveTemplate() {
-      // console.log("axiosNewSaveTemplate");
+      console.log("axiosNewSaveTemplate");
       axios
-        .post(this.apiHost + "/api/sana/template/data", {
-          name: this.templateName,
-          template: this.voiceLinkTexts.map(x => JSON.stringify(x))
+        .post(this.apiHost + "template/data", {
+          name: this.template.name,
+          template: this.retentionData.map(x => JSON.stringify(x))
         })
         .then(res => {
           alert(res.data.msg);
@@ -256,9 +404,9 @@ export default {
     axiosEditSaveTemplate() {
       console.log("axiosEditSaveTemplate");
       axios
-        .put(this.apiHost + "/api/sana/template/data", {
-          name: this.templateName,
-          template: this.voiceLinkTexts.map(x => JSON.stringify(x))
+        .put(this.apiHost + "template/data", {
+          name: this.template.name,
+          template: this.retentionData.map(x => JSON.stringify(x))
         })
         .then(res => {
           alert(res.data.msg);
@@ -267,64 +415,109 @@ export default {
           console.log(res);
           alert("保存に失敗しました");
         });
+    },
+
+    /*ページ変更っぽいやつ*/
+    homeClick() {
+      console.log("homeClick");
+      this.pageChangeFunc();
+      this.flag.pageStatus = "home";
+    },
+    templateClick() {
+      console.log("templateClick");
+      this.pageChangeFunc();
+      this.flag.pageStatus = "template";
+    },
+    howtouseClick() {
+      console.log("howtouseClick");
+      this.pageChangeFunc();
+      this.flag.pageStatus = "how";
+    },
+    pageChangeFunc() {
+      this.flag.recog = false;
+      this.API.recognition.stop();
     }
   },
   computed: {
-    canPush() {
-      //console.log("canPush");
-      return this.voiceLinkTexts.length < 20;
-    },
-    canDelete() {
-      //console.log("canDelete");
-      return this.voiceLinkTexts.length - 1;
-    },
     canSave() {
       return this.templateName.length;
+    },
+    countRetentionData() {
+      return this.retentionData.length;
+    },
+    inputCheck() {
+      //console.log("inputCheck");
+      var nullCheck = this.formContents.input != null;
+      if (nullCheck)
+        nullCheck = nullCheck && this.formContents.input.length > 0;
+      return nullCheck;
+    },
+    titleCheck() {
+      //console.log("titleCheck");
+      var nullCheck = this.formContents.selectTitle != null;
+      if (nullCheck)
+        nullCheck = nullCheck && this.formContents.selectTitle.length > 0;
+      return nullCheck;
+    },
+    buttonCheck() {
+      //console.log("selectButton");
+      var nullCheck = this.formContents.selectButton != null;
+      if (nullCheck)
+        nullCheck = nullCheck && this.formContents.selectButton.length > 0;
+      return nullCheck;
+    },
+    checkFillData() {
+      //console.log("checkFillData");
+      return this.inputCheck && this.titleCheck && this.buttonCheck;
+    },
+    canSaveTemplateName() {
+      return this.saveTemplate.name.length > 0;
     }
   },
   watch: {
     playQue() {
-      //console.log("playAudio" + this.playQue.length);
-      if (this.playQue.length > 0 && this.audioFlag) {
-        this.audioObj.src = this.playQue[0];
-        //console.log("nowPlay: " + this.playQue[0]);
-        this.audioFlag = false;
-        this.audioObj.play();
+      console.log("playAudio");
+      if (this.playQue.length > 0 && this.flag.audioStatus) {
+        this.API.audio.src = this.playQue[0];
+        this.flag.audioStatus = false;
+        this.API.audio.play();
       }
     }
   },
   created() {
     //console.log("created");
-    this.axiosGetCategory();
+    this.axiosGetTitle();
     this.axiosGetTemplateNameList();
+
     //webkitの使用機能やイベントを設定
     //日本語を読み取る
-    this.recognition.lang = "ja";
-    //忘れた
-    this.recognition.interimResults = true;
-
-    this.recognition.maxAlternatives = 1;
+    this.API.recognition.lang = "ja";
+    //途中経過をみる
+    this.API.recognition.interimResults = true;
+    //予測結果を返す数
+    this.API.recognition.maxAlternatives = 1;
     //連続で文章を読み取る
-    this.recognition.continuous = true;
+    // this.API.recognition.continuous = true;
     //入力を開始した時のイベント
-    // this.recognition.onstart = () => {};
+    // this.API.recognition.onstart = () => {};
 
     //認識API終了した時のイベント
-    //1分黙りが続くと止まってしまうのでそれを回避するためのやつ
-    this.recognition.onend = () => {
-      if (this.recogFlag) this.recognition.start();
+    //連続認識するために音声認識APIが終了した時に音声認識フラグが立っていたら続けて認識
+    this.API.recognition.onend = () => {
+      if (this.flag.recog) this.API.recognition.start();
     };
     //読み取り結果のイベント
-    this.recognition.onresult = event => {
+    this.API.recognition.onresult = event => {
       var results = event.results[event.resultIndex];
       this.showInputText = results[0].transcript;
       if (results.isFinal) this.audioSetQue(results[0].transcript);
     };
 
     //audioAPIの終了イベントを検知した時の動作
-    this.audioObj.addEventListener("ended", () => {
+    this.API.audio.addEventListener("ended", () => {
+      //キューの先頭を削除して再生待機モードにする
       this.playQue.shift();
-      this.audioFlag = true;
+      this.flag.audioStatus = true;
     });
   }
 };
@@ -332,127 +525,67 @@ export default {
 
 <style>
 body {
-  color: #7c7c7c; /*文字色*/
+  color: #7c7c7c;
+  /*文字色*/
   font-family: "M PLUS 1p";
+  font-size: 120%;
 }
+
 .title {
-  text-align: center;
   font-family: "Fredoka One", cursive;
-  font-size: 280%;
+  font-size: 200%;
+}
+
+a.title:visited {
   color: #f4cfe2;
 }
 
-.start-button-contents {
-  padding: 5px;
-  text-align: center;
-  font-family: "B612 Mono", monospace;
+a:visited {
+  color: #7c7c7c;
 }
-
-button {
+header a {
   margin: 5px;
-  font-size: 50%;
-  color: #7c7c7c; /*文字色*/
-  border-radius: 0.5em;
 }
 
-.start {
-  background-color: #f8bad7;
-}
-
-.end {
-  background-color: #f8bad7;
-}
-
-.end {
-  -webkit-animation: blink 1s ease-in-out infinite alternate;
-  -moz-animation: blink 1s ease-in-out infinite alternate;
-  animation: blink 1s ease-in-out infinite alternate;
-}
-@-webkit-keyframes blink {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-@-moz-keyframes blink {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-@keyframes blink {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-.separate {
-  content: "";
-  display: block;
-  clear: both;
-}
-
-.left-box {
-  float: left;
-  width: 30%;
-  font-size: 20px;
-}
-
-.center-box {
-  float: left;
-  width: 45%;
-  font-size: 20px;
+.add-button {
   text-align: center;
 }
 
-.right-box {
-  float: left;
-  width: 25%;
-  font-size: 20px;
+.main-content-box {
+  width: 80%;
+  margin: 0 auto;
+  max-width: 1000px;
 }
 
-.button-list {
-  text-align: left;
-  font-size: 15px;
-  padding: 5px;
+.talknig-conponent,
+.config-select-component,
+.input-form-component {
+  height: 40%;
 }
 
-.grid-contener {
-  display: grid; /* グリッドレイアウト */
-  grid-template-columns: 25% 25% 25% 20%;
+.recog-enter-active,
+.config-input-enter-active,
+.config-list-enter-active,
+.discription-enter-active,
+.start-button-enter-active {
+  transition: opacity 1500ms;
+}
+.recog-enter,
+.recog-leave-to,
+.config-input-enter,
+.config-input-leave-to,
+.config-list-enter,
+.config-list-leave-to,
+.discription-enter,
+.discription-leave-to,
+.start-button-enter,
+.start-button-leave-to {
+  opacity: 0;
 }
 
-.form {
-  margin: 2px;
+.show-config-component {
 }
-
-.input-box-label {
-  display: inline-block;
-  width: 100%;
-  font-size: 90%;
-  text-align: center;
-}
-
-.select-category-label {
-  display: inline-block;
-  /* background-color: #fff; */
-  width: 100%;
-  font-size: 90%;
-  text-align: center;
-}
-
-.select-contents-label {
-  display: inline-block;
-  /* background-color: #fff; */
-  width: 100%;
-  font-size: 90%;
-  text-align: center;
+.template-save {
+  text-align: right;
 }
 </style>
