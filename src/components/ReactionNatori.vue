@@ -53,10 +53,10 @@
           <legend>コンフィグリスト</legend>
           <div class="template-save">
             <label>コンフィグ名</label>
-            <input type="text" v-model="saveTemplate.name">
+            <input type="text" v-model="saveToLocalData.name">
             <button
               class="small"
-              v-bind:disabled="!canSaveTemplateName"
+              v-bind:disabled="!canSaveToLocal"
               @click="saveConfigTempraryData"
             >コンフィグ保存</button>
           </div>
@@ -92,8 +92,8 @@
           <legend>コンフィグリスト</legend>
           <div class="template-save">
             <label>公開する名前</label>
-            <input type="text">
-            <button>公開</button>
+            <input type="text" v-model="saveToGlobalData.name">
+            <button @click="axiosNewSaveToGlobal">公開</button>
           </div>
           <showOnly-component class="show-config-component" v-bind:showConfigList="localShowData"></showOnly-component>
         </fieldset>
@@ -112,7 +112,7 @@
             <legend>グローバルコンフィグだよ〜</legend>
             <templateselector-component
               class="config-select-component"
-              v-bind:template="template.selectList"
+              v-bind:template="global.selectList"
               v-on:selectTemplateName="handleUseTemplate"
               v-on:updateTemplate="updateTemplate"
             ></templateselector-component>
@@ -222,13 +222,15 @@ export default {
         title: null,
         button: null
       },
-      template: {
+      global: {
         selectList: null,
         name: null
       },
-      saveTemplate: {
-        name: "",
-        password: ""
+      saveToLocalData: {
+        name: ""
+      },
+      saveToGlobalData: {
+        name: ""
       },
       //各入力フォームが持つ変数
       formContents: {
@@ -277,7 +279,6 @@ export default {
     deepcopy(json) {
       return JSON.parse(JSON.stringify(json));
     },
-
     /*v-onハンドラ系*/
 
     //inputFormからのinputデータをformContentsのinputに入れる
@@ -300,8 +301,8 @@ export default {
     //テンプレート選択時の挙動
     handleUseTemplate(selectTemplateName) {
       console.log("handleUseTemplate");
-      this.template.name = selectTemplateName;
-      this.axiosGetTemplate(this.template.name);
+      this.global.name = selectTemplateName;
+      this.axiosGetGlobalConfig(this.global.name);
     },
     //showConfigListからのボタンイベントで発火
     pushEditButton(config) {
@@ -319,7 +320,7 @@ export default {
     //テンプレートを更新する
     updateTemplate(e) {
       console.log("updateTemplate");
-      this.axiosGetTemplateNameList();
+      this.axiosGetGlobalNameList();
     },
 
     /*ResponSa-naの根幹となる機能*/
@@ -391,33 +392,33 @@ export default {
       console.log("setConfigToRetentionData");
       this.localShowData = this.deepcopy(this.configTemporaryData[configName]);
     },
-    //ローカルコンフィグに保存
+    //ローカルコンフィグリストに保存
     saveConfigTempraryData() {
       console.log("saveConfigTempraryData");
-      this.configTemporaryData[this.saveTemplate.name] = this.deepcopy(
+      this.configTemporaryData[this.saveToLocalData.name] = this.deepcopy(
         this.retentionData
       );
       console.log(this.configTemporaryData);
       this.retentionData = [];
-      this.saveTemplate.name = "";
+      this.saveToLocalData.name = "";
     },
 
     /*グローバルテンプレート機能*/
     //テンプレリストをDBから取得
-    axiosGetTemplateNameList() {
-      console.log("axiosGetTemplateNameList");
+    axiosGetGlobalNameList() {
+      console.log("axiosGetGlobalNameList");
       axios
         .get(this.apiHost + "template/show")
         .then(res => {
-          this.template.selectList = res.data.templateNameList;
+          this.global.selectList = res.data.templateNameList;
         })
         .catch(res => {
           console.log(res);
         });
     },
     //選択されたテンプレから内部データを取得
-    axiosGetTemplate(name) {
-      console.log("axiosGetTemplate");
+    axiosGetGlobalConfig(name) {
+      console.log("axiosGetGlobalConfig");
       axios
         .get(this.apiHost + "template/data", {
           params: {
@@ -426,31 +427,17 @@ export default {
         })
         .then(res => {
           var temp = res.data.retentionData;
-          if (temp.length > 0) globalShowData = temp.map(x => JSON.parse(x));
+          if (temp.length > 0)
+            this.globalShowData = temp.map(x => JSON.parse(x));
         });
     },
 
-    axiosNewSaveTemplate() {
-      console.log("axiosNewSaveTemplate");
+    axiosNewSaveToGlobal() {
+      console.log("axiosNewSaveToGlobal");
       axios
         .post(this.apiHost + "template/data", {
-          name: this.template.name,
-          template: this.retentionData.map(x => JSON.stringify(x))
-        })
-        .then(res => {
-          alert(res.data.msg);
-        })
-        .catch(res => {
-          console.log(res);
-          alert("保存に失敗しました");
-        });
-    },
-    axiosEditSaveTemplate() {
-      console.log("axiosEditSaveTemplate");
-      axios
-        .put(this.apiHost + "template/data", {
-          name: this.template.name,
-          template: this.retentionData.map(x => JSON.stringify(x))
+          name: this.saveToGlobalData.name,
+          template: this.localShowData.map(x => JSON.stringify(x))
         })
         .then(res => {
           alert(res.data.msg);
@@ -523,8 +510,8 @@ export default {
       //console.log("checkFillData");
       return this.inputCheck && this.titleCheck && this.buttonCheck;
     },
-    canSaveTemplateName() {
-      return this.saveTemplate.name.length > 0;
+    canSaveToLocal() {
+      return this.saveToLocalData.name.length > 0;
     }
   },
   watch: {
@@ -540,7 +527,7 @@ export default {
   created() {
     //console.log("created");
     this.axiosGetTitle();
-    this.axiosGetTemplateNameList();
+    this.axiosGetGlobalNameList();
 
     //webkitの使用機能やイベントを設定
     //日本語を読み取る
