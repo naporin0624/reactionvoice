@@ -38,7 +38,8 @@
 
             <inputform-component
               class="input-form-component"
-              v-bind:selector="selector"
+              v-bind:selectorTitle="selector.title"
+              v-bind:selectorButton="selector.button"
               v-bind:showInputForm="formContents"
               v-on:input="handleInput"
               v-on:selectTitle="handleSelectTitle"
@@ -66,6 +67,7 @@
               class="show-config-component"
               v-bind:showConfigList="retentionData"
               v-bind:selector="selector"
+              v-on:editSelectTitle="editSelectTitle"
               v-on:del="pushDeleteButton"
               v-on:editResult="pushEditButton"
             ></showconfig-component>
@@ -167,8 +169,8 @@ export default {
   data() {
     return {
       //バックエンド接続先
-      // apiHost: "https://responsa-na.herokuapp.com/api/sana/",
-      apiHost: "http://localhost:5000/api/sana/",
+      apiHost: "https://responsa-na.herokuapp.com/api/sana/",
+      // apiHost: "http://localhost:5000/api/sana/",
       //ユーザーが認識結果を見るための変数
       showInputText: "",
       //イベントに引っかかった音声URLをQueに積む
@@ -227,7 +229,8 @@ export default {
       },
       selector: {
         title: null,
-        button: null
+        button: null,
+        editButton: null
       },
       global: {
         selectList: null,
@@ -295,15 +298,21 @@ export default {
     },
     //inputFormからのselectTitleデータをformContentsのselectTitleに入れる
     handleSelectTitle(title) {
-      //console.log("handleSelectTitle");
+      console.log("handleSelectTitle");
       this.formContents.selectTitle = title;
-      this.axiosGetButtonList(title);
+      this.axiosGetButtonList(title).then(data => {
+        this.selector.button = data;
+      });
     },
     //inputFormからのselectButtonデータをformContentsのselectButtonに入れる
     handleSelectButton(button) {
-      //console.log("handleSelectName");
+      // console.log("handleSelectName");
       this.formContents.selectButton = button;
-      this.axiosGetURL(button);
+      this.axiosGetURL(this.formContents).then(data => {
+        console.log(data);
+        this.formContents.audio = data;
+        console.log(this.formContents);
+      });
     },
     //テンプレート選択時の挙動
     handleUseTemplate(selectTemplateName) {
@@ -313,9 +322,21 @@ export default {
     },
     //showConfigListからのボタンイベントで発火
     pushEditButton(config) {
-      //console.log("pushEditButton");
+      // console.log("pushEditButton");
       var index = this.retentionData.findIndex(item => item.id === config.id);
       this.retentionData[index] = this.deepcopy(config);
+      console.log(config);
+      this.axiosGetURL(config).then(data => {
+        console.log(data, index);
+        this.retentionData[index].audio = data;
+        console.log(this.retentionData[index]);
+      });
+    },
+    editSelectTitle(title) {
+      console.log("editSelectTitle");
+      this.axiosGetButtonList(title).then(data => {
+        this.selector.editButton = data;
+      });
     },
     //showConfigListからの削除ボタンイベントで発火
     //削除を押されたコンフィグを削除します
@@ -349,7 +370,7 @@ export default {
     },
     //放送タイトルリストを取得
     axiosGetTitle() {
-      //console.log("getCategory");
+      console.log("getCategory");
       axios
         .get(this.apiHost + "category")
         .then(res => {
@@ -363,14 +384,15 @@ export default {
     //選択された生放送のさなボタンを取得
     axiosGetButtonList(title) {
       //console.log("axiosetNameList");
-      axios
+      return axios
         .get(this.apiHost + "names", {
           params: {
             category: title
           }
         })
         .then(res => {
-          this.selector.button = res.data.voiceList;
+          return res.data.voiceList;
+          // this.selector.button = res.data.voiceList;
         })
         .catch(res => {
           console.log(res);
@@ -378,17 +400,19 @@ export default {
         .then(console.log("axiosGetNameList finish"));
     },
     //選択されたさなボタンからURLを取得
-    axiosGetURL(button) {
+    axiosGetURL(config) {
       //console.log("axiosGetURL");
-      axios
+      return axios
         .get(this.apiHost + "voiceurl", {
           params: {
-            category: this.formContents.selectTitle,
-            name: this.formContents.selectButton
+            category: config.selectTitle,
+            name: config.selectButton
           }
         })
         .then(res => {
-          this.formContents.audio = res.data.voiceURL;
+          // if(saveObj=="form") this.formContents.audio = res.data.voiceURL;
+          // else this.
+          return res.data.voiceURL;
         })
         .catch(res => {
           console.log(res);

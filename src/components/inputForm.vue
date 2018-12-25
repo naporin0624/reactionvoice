@@ -15,9 +15,9 @@
         <label>放送タイトル</label>
       </div>
       <div class="col-sm-12 col-md-8 input-contents">
-        <select class="input-width" v-model="selectTitle" @change="sendSelectTitle">
+        <select class="input-width" v-model="selectTitleLocal" @change="sendSelectTitle">
           <option disabled value>何か一つ選んでね</option>
-          <option v-for="title in selector.title" v-bind:key="title + Math.random()">{{title}}</option>
+          <option v-for="title in selectorTitle" v-bind:key="title + Math.random()">{{title}}</option>
         </select>
       </div>
     </div>
@@ -27,10 +27,10 @@
         <label>反応ボイス</label>
       </div>
       <div class="col-sm-12 col-md-8 input-contents">
-        <select class="input-width" v-model="selectButton" @change="sendSelectButton">
+        <select class="input-width" v-model="selectButtonLocal" @change="sendSelectButton">
           <option disabled value>{{selectDisabledValue}}</option>
           <!-- keyがダブることがあるのでrandomを使っている -->
-          <option v-for="button in selector.button" v-bind:key="button + Math.random()">{{button}}</option>
+          <option v-for="button in selectorButton" v-bind:key="button + Math.random()">{{button}}</option>
         </select>
       </div>
     </div>
@@ -41,25 +41,26 @@
 export default {
   name: "inputForm",
   props: {
-    selector: Object,
+    selectorTitle: Array,
+    selectorButton: Array,
     showInputForm: Object
   },
   data() {
     return {
       input: null,
-      selectTitle: null,
-      selectButton: null
+      selectTitleLocal: null,
+      selectButtonLocal: null
     };
   },
   mounted() {
     this.input = this.showInputForm.input;
-    this.selectTitle = this.showInputForm.selectTitle;
-    this.selectButton = this.showInputForm.selectButton;
+    this.selectTitleLocal = this.showInputForm.selectTitle;
+    this.selectButtonLocal = this.showInputForm.selectButton;
   },
   computed: {
     selectDisabledValue() {
       //console.log("selectDisabledValue");
-      if (this.selector.button) return "何か一つ選んでね";
+      if (this.selectButton) return "何か一つ選んでね";
       else return "先に放送タイトルを選んでね";
     }
   },
@@ -70,11 +71,11 @@ export default {
     },
     sendSelectTitle() {
       //console.log("sendSelectTitle");
-      this.$emit("selectTitle", this.selectTitle);
+      this.$emit("selectTitle", this.selectTitleLocal);
     },
     sendSelectButton() {
       //console.log("sendSelectButton");
-      this.$emit("selectButton", this.selectButton);
+      this.$emit("selectButton", this.selectButtonLocal);
     }
   }
 };

@@ -32,7 +32,8 @@
         <inputform-component
           v-if="config.id===showConfig.id&&editStatus"
           v-bind:showInputForm="config"
-          v-bind:selector="selector"
+          v-bind:selectorTitle="selector.title"
+          v-bind:selectorButton="selector.editButton"
           v-on:input="handleInput"
           v-on:selectTitle="handleSelectTitle"
           v-on:selectButton="handleSelectButton"
@@ -89,7 +90,11 @@ export default {
     //inputFormからのselectTitleデータをformContentsのselectTitleに入れる
     handleSelectTitle(title) {
       //console.log("handleSelectTitle");
+
+      //idも一緒にあげて親のデータを変更しないとv-modelで前のデータにバインディングされる問題あり
+
       this.showConfig.selectTitle = title;
+      this.$emit("editSelectTitle", title);
     },
     //inputFormからのselectButtonデータをformContentsのselectButtonに入れる
     handleSelectButton(button) {
