@@ -4,6 +4,7 @@ import axios from 'axios';
 // import HelloWorld from '@/components/HelloWorld'
 import ReactionNatori from '@/components/ReactionNatori'
 import discription from '@/components/discription'
+import Main from '@/components/Page/Main'
 
 Vue.use(Router)
 
@@ -16,5 +17,9 @@ export default new Router({
         path: '/sana/discription',
         name: 'discription',
         component: discription
+    }, {
+        path: '/main',
+        name: 'main',
+        component: Main
     }]
 })
