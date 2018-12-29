@@ -6,7 +6,7 @@
         <label>反応させたい言葉</label>
       </div>
       <div class="col-sm-12 col-md-8 input-contents">
-        <inputtext-component v-bind:input="form.input" v-on:inputEvent="inputFormEvent"></inputtext-component>
+        <input type="text" v-model="localInput">
       </div>
     </div>
     <!-- 放送タイトル選択欄 -->
@@ -15,7 +15,10 @@
         <label>放送タイトル</label>
       </div>
       <div class="col-sm-12 col-md-8 input-contents">
-        <selector-component v-bind:selectItem="selector.title" v-on:selectEvent="selectTitleEvent"></selector-component>
+        <select v-model="localTitle">
+          <option disabled value>何か一つ選んでね</option>
+          <option v-for="title in selector.titleList" v-bind:key="title+Math.random()">{{title}}</option>
+        </select>
       </div>
     </div>
     <!-- 発火ボイス登録 -->
@@ -24,34 +27,48 @@
         <label>反応ボイス</label>
       </div>
       <div class="col-sm-12 col-md-8 input-contents">
-        <selector-component v-bind:selectItem="selector.audio" v-on:selectEvent="selectAudioEvent"></selector-component>
+        <select v-model="localAudio">
+          <option disabled value>何か一つ選んでね</option>
+          <option v-for="audio in selector.audioList" v-bind:key="audio+Math.random()">{{audio}}</option>
+        </select>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import SelectorComponent from "../Atom/Selector";
-import InputTextComponent from "../Atom/InputText";
 export default {
   name: "InputFormMolecules",
   props: {
-    form: Object,
+    input: String,
+    title: String,
+    audio: String,
     selector: Object
   },
-  components: {
-    "selector-component": SelectorComponent,
-    "inputtext-component": InputTextComponent
-  },
-  method: {
-    inputFormEvent(text) {
-      this.$emit("inputFormEvent", text);
+  computed: {
+    localInput: {
+      get: function() {
+        return this.input;
+      },
+      set: function(text) {
+        this.$emit("update:input", text);
+      }
     },
-    selectTitleEvent(text) {
-      this.$emit("titleEvent", text);
+    localTitle: {
+      get: function() {
+        return this.title;
+      },
+      set: function(text) {
+        this.$emit("update:title", text);
+      }
     },
-    selectAudioEvent(text) {
-      this.$emit("audioEvent", text);
+    localAudio: {
+      get: function() {
+        return this.audio;
+      },
+      set: function(text) {
+        this.$emit("update:audio", text);
+      }
     }
   }
 };
@@ -64,7 +81,8 @@ export default {
 .input-contents-label {
   text-align: right;
 }
-.input-width {
-  width: 100%;
+input,
+select {
+  width: 60%;
 }
 </style>
