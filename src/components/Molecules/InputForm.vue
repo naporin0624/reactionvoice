@@ -2,19 +2,19 @@
   <div>
     <!-- 単語入力欄 -->
     <div class="row">
-      <div :class="splitLeftClass">
+      <div class="col-sm-12 col-md-4 input-contents-label">
         <label>反応させたい言葉</label>
       </div>
-      <div :class="splitRightClass">
+      <div class="col-sm-12 col-md-8 input-contents">
         <input type="text" v-model="localInput">
       </div>
     </div>
     <!-- 放送タイトル選択欄 -->
     <div class="row">
-      <div :class="splitLeftClass">
+      <div class="col-sm-12 col-md-4 input-contents-label">
         <label>放送タイトル</label>
       </div>
-      <div :class="splitRightClass">
+      <div class="col-sm-12 col-md-8 input-contents">
         <select v-model="localTitle">
           <option disabled value>何か一つ選んでね</option>
           <option v-for="title in selector.titleList" v-bind:key="title+Math.random()">{{title}}</option>
@@ -23,10 +23,10 @@
     </div>
     <!-- 発火ボイス登録 -->
     <div class="row">
-      <div :class="splitLeftClass">
+      <div class="col-sm-12 col-md-4 input-contents-label">
         <label>反応ボイス</label>
       </div>
-      <div :class="splitRightClass">
+      <div class="col-sm-12 col-md-8 input-contents">
         <select v-model="localAudio">
           <option disabled value>何か一つ選んでね</option>
           <option v-for="audio in selector.audioList" v-bind:key="audio+Math.random()">{{audio}}</option>
@@ -44,12 +44,6 @@ export default {
     title: String,
     audio: String,
     selector: Object
-  },
-  data() {
-    return {
-      splitLeftClass: ["col-sm-12 col-md-3", "input-contents-label"],
-      splitRightClass: ["col-sm-12 col-md-9", "input-contents"]
-    };
   },
   computed: {
     localInput: {
@@ -82,13 +76,13 @@ export default {
 
 <style scoped>
 .input-contents {
-  text-align: center;
+  text-align: left;
 }
 .input-contents-label {
-  text-align: center;
+  text-align: right;
 }
 input,
 select {
-  width: 80%;
+  width: 60%;
 }
 </style>
