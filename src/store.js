@@ -11,6 +11,7 @@ const store = new Vuex.Store({
     state: {
         listConfig: [],
         saveLocalListConfig: [],
+        globalConfigList: {}
     },
     //データの状態を取得
     getters: {
@@ -28,7 +29,7 @@ const store = new Vuex.Store({
         },
         nameFindSaveList(state) {
             return name => state.saveLocalListConfig.find(el => el.name === name)
-        }
+        },
     },
     //データの更新
     mutations: {
@@ -46,7 +47,6 @@ const store = new Vuex.Store({
             console.log("deleteListConfig", payload)
             let id = payload.id
             let index = state.listConfig.findIndex(el => el.id === id)
-            console.log("index", index)
             state.listConfig[index]["id"] *= -1
         }
     },
