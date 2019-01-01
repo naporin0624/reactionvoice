@@ -106,7 +106,8 @@ export default {
       this.$emit("endEdit", { config: config, id: this.oneConfig.id });
     },
     deleteEvent() {
-      this.$emit("deleteEvent", this.oneConfig.id);
+      this.flag = false;
+      this.$emit("deleteEvent", { id: this.oneConfig.id });
     }
   }
 };
@@ -118,7 +119,7 @@ export default {
 }
 .v-enter-active,
 .v-leave-active {
-  transition: opacity 0.5s, transform 0.5s;
+  transition: opacity 0.3s, transform 0.6s;
 }
 .v-enter {
   opacity: 0;

@@ -47,26 +47,26 @@ export default {
   },
   computed: {
     localInput: {
-      get: function() {
+      get() {
         return this.input;
       },
-      set: function(text) {
+      set(text) {
         this.$emit("update:input", text);
       }
     },
     localTitle: {
-      get: function() {
+      get() {
         return this.title;
       },
-      set: function(text) {
+      set(text) {
         this.$emit("update:title", text);
       }
     },
     localAudio: {
-      get: function() {
+      get() {
         return this.audio;
       },
-      set: function(text) {
+      set(text) {
         this.$emit("update:audio", text);
       }
     }

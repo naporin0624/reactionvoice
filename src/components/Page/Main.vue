@@ -1,6 +1,10 @@
 <template>
-  <div>
-    <fieldset>
+  <div class="main">
+    <div class="talk-button">
+			<label>録音開始ボタンだよ</label><br>
+      <button v-bind:class='{waiting:!flag.recog, playing:flag.recog}' @click='flag.recog = !flag.recog'>喋る！</button>
+    </div>
+    <fieldset class="input-voice">
       <legend>反応ボイスを入力してね</legend>
       <inputform-component
         v-bind:input.sync="oneConfig.form.input"
@@ -12,7 +16,7 @@
         <button @click="mainAddConfig" v-bind:disabled="canPushAddButton">この設定で追加</button>
       </div>
     </fieldset>
-    <fieldset>
+    <fieldset class="show-voice">
       <legend>コンフィグリスト</legend>
       <div v-for="config in listConfigUpdate" :key="config.id+Math.random()">
         <editor-component
@@ -39,8 +43,11 @@ export default {
   },
   data() {
     return {
+      flag: {
+        recog: false
+      },
       oneConfig: {
-        id: 0,
+        id: 1,
         selector: {
           titleList: [],
           audioList: []
@@ -62,8 +69,8 @@ export default {
   },
   computed: {
     listConfigUpdate() {
-      console.log("listConfigUpdate");
       let listConfig = this.$store.getters.listConfig;
+      console.log("listConfigUpdate", listConfig);
       return listConfig;
     },
     canPushAddButton() {
@@ -85,11 +92,13 @@ export default {
     editorStartEdit() {
       console.log("editorStartEdit");
     },
-    editorEndEdit() {
-      console.log("editorEndEdit");
+    editorEndEdit(payload) {
+      console.log("editorEndEdit", payload);
+      this.$store.commit("updateListConfig", payload);
     },
-    editorDelete() {
-      console.log("editorDelete");
+    editorDelete(payload) {
+      console.log("editorDelete", payload);
+      this.$store.commit("deleteListConfig", payload);
     },
     mainFillTitleEvent() {
       console.log("mainFillTitleEvent");
@@ -109,35 +118,50 @@ export default {
       });
     },
     mainAddConfig() {
-      console.log("mainAddConfig");
-      console.log(this.oneConfig);
+      console.log("mainAddConfig", this.oneConfig);
       this.$store.commit("pushListConfig", this.deepcopy(this.oneConfig));
-      this.mainClearConfig();
-    },
-    mainClearConfig() {
-      console.log("mainClearConfig");
-      this.oneConfig.form = {
-        input: null,
-        title: null,
-        audio: null
-      };
-      this.oneConfig.selector.audioList = [];
-      this.oneConfig.blind = { url: "" };
-      this.oneConfig.id++;
     }
   },
   created() {
     AxiosTemplate.get(apiURL + "category").then(res => {
       this.oneConfig.selector.titleList = res.categoryList;
     });
+
+    this.API.recognition.lang = "ja";
+    this.API.recognition.interimResults = true;
+    this.API.recognition.onend = () => {
+      if (this.flag.recog) this.API.recognition.start();
+    };
+    this.API.recognition.result = event => {
+      let results = event.results[event.resultIndex];
+      if (results.isFinal) {
+        let resultMessage = results[0].transcript;
+        console.log("final result", resultMessage);
+      }
+    };
   }
 };
 </script>
 
 <style scoped>
+.main {
+  width: 90%;
+  margin: 0 auto;
+}
+.talk-button {
+  text-align: center;
+}
+.talk-button button {
+  width: 100px;
+}
 .add-button {
   text-align: center;
 }
+.input-voice {
+}
+.show-voice {
+  height: 50vh;
+  overflow-y: scroll;
+  margin-bottom: 1px;
+}
 </style>
-
-
