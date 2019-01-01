@@ -1,7 +1,7 @@
 <template>
   <div class="main">
     <startbutto-component v-bind:flag="flag"></startbutto-component>
-    <fieldset class="input-voice" v-show="!flag.recog">
+    <!-- <fieldset class="input-voice" v-show="!flag.recog">
       <legend>反応ボイスを入力してね</legend>
       <inputform-component
         v-bind:input.sync="oneConfig.form.input"
@@ -11,9 +11,10 @@
       ></inputform-component>
       <div class="add-button">
         <button @click="mainAddConfig" v-bind:disabled="canPushAddButton">この設定で追加</button>
-        <!-- <button @click v-bind:disable="canPushAddButton">{{}}</button> -->
+        <button @click v-bind:disable="canPushAddButton">{{}}</button>
       </div>
-    </fieldset>
+    </fieldset>-->
+    <configsetform-component v-bind:config="oneConfig" v-on:pushEvent="mainAddConfig"></configsetform-component>
     <fieldset class="talking" v-show="flag.recog">
       <legend>喋ったことを表示するよ</legend>
       <talkingbox-component v-bind:voiceText="takingLog"></talkingbox-component>
@@ -37,6 +38,7 @@ import StartButton from "../Molecules/StartButton";
 import InputForm from "../Molecules/InputForm";
 import TalkingBox from "../Molecules/talingLog";
 import editor from "../Organisms/Editor";
+import ConfigSetForm from "../Organisms/ConfigSetForm";
 
 import AxiosTemplate from "../api/AxiosTemplate.js";
 const apiURL = "http://192.168.1.125:5000/api/sana/";
@@ -46,7 +48,8 @@ export default {
     "inputform-component": InputForm,
     "editor-component": editor,
     "startbutto-component": StartButton,
-    "talkingbox-component": TalkingBox
+    "talkingbox-component": TalkingBox,
+    "configsetform-component": ConfigSetForm
   },
   data() {
     return {
@@ -69,9 +72,9 @@ export default {
           audioList: []
         },
         form: {
-          input: null,
-          title: null,
-          audio: null
+          input: "",
+          title: "",
+          audio: ""
         },
         blind: {
           url: ""
@@ -101,33 +104,10 @@ export default {
       console.log("editorDelete", payload);
       this.$store.commit("deleteListConfig", payload);
     },
-    mainFillTitleEvent() {
-      console.log("mainFillTitleEvent");
-      AxiosTemplate.get(apiURL + "names", {
-        category: this.oneConfig.form.title
-      }).then(res => {
-        this.oneConfig.selector.audioList = res.voiceList;
-      });
-    },
-    mainFillAudioEvent() {
-      console.log("mainFillAudioEvent");
-      AxiosTemplate.get(apiURL + "voiceurl", {
-        category: this.oneConfig.form.title,
-        name: this.oneConfig.form.audio
-      }).then(res => {
-        this.oneConfig.blind = res.voiceURL;
-      });
-    },
+
     mainAddConfig() {
       console.log("mainAddConfig", this.oneConfig);
       this.$store.commit("pushListConfig", this.deepcopy(this.oneConfig));
-    },
-    mainTrialPlaingAudioStart() {
-      this.trialAudio.src = this.oneConfig.blind.url;
-      this.trialAudio.play();
-    },
-    mainTrialPlaingAudioStop() {
-      this.trialAudio.parse();
     }
   },
   created() {
